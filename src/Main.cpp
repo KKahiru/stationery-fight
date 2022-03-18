@@ -64,7 +64,7 @@ void Main(){
             if (game_units[i].is_player_camp) {
                 Circle{ game_units[i].x , 300 , 20 }.draw(ColorF{ 0,0,1 });
             } else {
-                Circle{ game_units[i].x , 300 , 20 }.draw(ColorF{ 0.25 });
+                Circle{ game_units[i].x , 300 , 20 }.draw(ColorF{ 1,0,0 });
             }
             
         }
