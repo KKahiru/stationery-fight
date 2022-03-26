@@ -5,11 +5,12 @@ using namespace std;
 
 class game_unit{
 public:
-    int x;
+    uint16 x;
     bool is_player_camp;
     string type;
-    int durability;
+    uint16 durability;
     void set_data(int x, string type, bool is_player_camp, int health);
+    uint16 cooldown = 0;
 };
 
 void game_unit::set_data(int x, string type, bool is_player_camp, int health)
@@ -18,6 +19,7 @@ void game_unit::set_data(int x, string type, bool is_player_camp, int health)
     this->type = type;
     this->is_player_camp = is_player_camp;
     this->durability = health;
+    
 }
 
 void Main(){
@@ -73,26 +75,16 @@ void Main(){
         while ( 0.1 <= accumulator) {
             for (unsigned long int i = 0; i < game_units.size(); i++) {
                 //情報を残すコード
-               /* cout << "No." << i << "| X:" << game_units[i].x << "| type:" << game_units[i].type << "| isPlayerCamp:" << game_units[i].is_player_camp  << "| health:" << game_units[i].durability <<endl;*/
+               cout << "No." << i << "| X:" << game_units[i].x << "| type:" << game_units[i].type << "| isPlayerCamp:" << game_units[i].is_player_camp  << "| health:" << game_units[i].durability <<endl;
                 bool has_attacked = false;
-                ///攻撃するgame_unitの検索
-                if (game_units[i].is_player_camp){
-                    for (unsigned long int i2 = 0; i2 < game_units.size(); i2++) {
-                        if (!game_units[i2].is_player_camp and game_units[i2].x>=game_units[i].x and game_units[i2].x <= game_units[i].x + 100){
-                            //攻撃処理
-                            game_units[i2].durability -= 1;
-                            has_attacked = true;
-                            hit_pop_1.playOneShot();
-                        }
-                    }
-                } else{
-                    for (unsigned long int i2 = 0; i2 < game_units.size(); i2++) {
-                        if (game_units[i2].is_player_camp and game_units[i2].x>=game_units[i].x - 100 and game_units[i2].x <= game_units[i].x){
-                            //攻撃処理
-                            game_units[i2].durability -= 1;
-                            has_attacked = true;
-                            hit_pop_1.playOneShot();
-                        }
+                //攻撃するgame_unitの検索
+                for (unsigned long int i2 = 0; i2 < game_units.size(); i2++) {
+                    if ( (game_units[i].is_player_camp and !game_units[i2].is_player_camp and game_units[i2].x>=game_units[i].x and game_units[i2].x <= game_units[i].x + 100) or (!game_units[i].is_player_camp and game_units[i2].is_player_camp and game_units[i2].x>=game_units[i].x - 100 and game_units[i2].x <= game_units[i].x ) ){
+                        //攻撃処理
+                        game_units[i2].durability -= 1;
+                        has_attacked = true;
+                        hit_pop_1.playOneShot();
+                        game_units[i].cooldown = 100;
                     }
                 }
                 
