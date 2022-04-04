@@ -1,6 +1,9 @@
 # include <Siv3D.hpp>
-#include <iostream>
-#include <vector>
+# include <iostream>
+# include <vector>
+# include <fstream> //ファイルシステム
+# include <cstdlib> //quick_exitの定義
+# include "json.hpp"
 using namespace std;
 
 class game_unit{
@@ -28,15 +31,28 @@ void Main(){
     // 蓄積された時間（秒）
     double accumulator = 0.0;
     vector<game_unit> game_units;
+
+    ifstream config_file("resource/config.json", ios::in);
+    if (config_file.is_open()){
+        cout << "Opened resource/config.json." << endl;
+    } else{
+        cerr << "Error!Could not open resource/config.json." << endl;
+        abort();
+        
+    }
     
-    /*for (int i = 0; i < 5; i++){
-     game_units.push_back(*new game_unit);
-     game_units[i].x = i*50;
-     game_units[i].is_player_camp = 1;
-     game_units[i].type = "pencil";
-     game_units[i].health = 100;
-     }*/
-    
+    string law_config_json;
+    while (!config_file.eof()) {
+        string temp_s;
+        getline(config_file, temp_s);
+        
+        if (law_config_json.length() > 0){
+            law_config_json = law_config_json +"\n" + temp_s;
+        }else{
+            law_config_json = temp_s;
+        }
+    }
+    cout << law_config_json << endl;
     while (System::Update())
     {
         //const double t = Scene::Time();

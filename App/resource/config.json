@@ -1,0 +1,12 @@
+{
+  "pencil" : [
+    "durability" : 100,
+    "attack_power" : 20,
+    "cooldown" : 20
+  ],
+  "eraser" : [
+    "durability" 45:,
+    "attack_power" : 60,
+    "cooldown" : 25
+  ],
+}
