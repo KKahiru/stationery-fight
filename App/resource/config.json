@@ -1,12 +1,14 @@
 {
-  "pencil" : [
+  "pencil" : {
     "durability" : 100,
     "attack_power" : 20,
-    "cooldown" : 20
-  ],
-  "eraser" : [
-    "durability" 45:,
+    "cooldown" : 20,
+    "speed" : 3
+  },
+  "eraser" : {
+    "durability" : 45,
     "attack_power" : 60,
-    "cooldown" : 25
-  ],
+    "cooldown" : 25,
+    "speed" : 5
+  }
 }
