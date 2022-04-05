@@ -38,6 +38,7 @@
 		2C5C471126B4F08E005E8C85 /* libzlib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C5C471026B4F08E005E8C85 /* libzlib.a */; };
 		2C6906D82298140F00A427D0 /* engine in Resources */ = {isa = PBXBuildFile; fileRef = 2C6906D72298140F00A427D0 /* engine */; };
 		A574ABA527FA7F8D009D15EB /* resource in Resources */ = {isa = PBXBuildFile; fileRef = A574ABA427FA7F8D009D15EB /* resource */; };
+		A5FE32A927FC7EC400DAA541 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = A5FE32A827FC7EC400DAA541 /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -75,6 +76,7 @@
 		2C6906D72298140F00A427D0 /* engine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = engine; path = App/engine; sourceTree = "<group>"; };
 		A574ABA427FA7F8D009D15EB /* resource */ = {isa = PBXFileReference; lastKnownFileType = folder; name = resource; path = App/resource; sourceTree = "<group>"; };
 		A574ABA727FA7FDD009D15EB /* json.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = json.hpp; sourceTree = "<group>"; };
+		A5FE32A827FC7EC400DAA541 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +120,7 @@
 		2C1778791CE0A9D800BB8AD0 = {
 			isa = PBXGroup;
 			children = (
+				A5FE32A827FC7EC400DAA541 /* README.md */,
 				A574ABA627FA7FDD009D15EB /* include */,
 				A574ABA427FA7F8D009D15EB /* resource */,
 				2C6906D72298140F00A427D0 /* engine */,
@@ -245,6 +248,7 @@
 			files = (
 				2C6906D82298140F00A427D0 /* engine in Resources */,
 				2C1778A31CE0B65500BB8AD0 /* icon.icns in Resources */,
+				A5FE32A927FC7EC400DAA541 /* README.md in Resources */,
 				A574ABA527FA7F8D009D15EB /* resource in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
