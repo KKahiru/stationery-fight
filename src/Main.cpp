@@ -4,9 +4,11 @@
 #include <fstream> //ファイルシステム
 #include <cstdlib> //quick_exitの定義
 #include "json.hpp"
+#include "Main.hpp"
 using namespace std;
+using namespace stfi;
 using json = nlohmann::json;
-
+/*
 class game_unit{
 public:
     uint16 x;
@@ -24,7 +26,7 @@ void game_unit::set_data(int x, string type, bool is_player_camp, int health)
     this->is_player_camp = is_player_camp;
     this->durability = health;
     
-}
+}*/
 
 void Main(){
     Scene::SetBackground(Palette::White);
@@ -33,7 +35,7 @@ void Main(){
     double accumulator = 0.0;
     //ステージ上のgame_unitのリスト
     vector<game_unit> game_units;
-    //config.jsonを開く
+   /* //config.jsonを開く
     ifstream config_file("resource/config.json", ios::in);
     if (config_file.is_open()){
         cout << "Opened resource/config.json." << endl;
@@ -55,7 +57,7 @@ void Main(){
         }
     }
     //cout << law_config_json << endl;
-    json config_json = json::parse(law_config_json);
+    json config_json = json::parse(law_config_json);*/
     while (System::Update())
     {
         accumulator += Scene::DeltaTime();
@@ -68,14 +70,14 @@ void Main(){
         if (SimpleGUI::Button(U"味方召喚", Vec2{ 100, 100 }))
         {
             game_unit new_game_unit;
-            new_game_unit.set_data(0,"pencil",true,100);
+            new_game_unit.set_data("pencil",true);
             game_units.push_back(new_game_unit);
             
         }
         if (SimpleGUI::Button(U"敵召喚", Vec2{ 300, 100 }))
         {
             game_unit new_game_unit;
-            new_game_unit.set_data(800,"pencil",false,100);
+            new_game_unit.set_data("pencil",false);
             game_units.push_back(new_game_unit);
         }
         //game_unitの描画
@@ -100,24 +102,18 @@ void Main(){
                         //相手が敵かどうかを判別する長い長い条件文
                         if ( (game_units[i].is_player_camp and !game_units[i2].is_player_camp and game_units[i2].x>=game_units[i].x and game_units[i2].x <= game_units[i].x + 100) or (!game_units[i].is_player_camp and game_units[i2].is_player_camp and game_units[i2].x>=game_units[i].x - 100 and game_units[i2].x <= game_units[i].x ) ){
                             
-                            //攻撃処理
-                            game_units[i2].durability -= config_json.at(json::json_pointer("/" + game_units[i].type + "/attack_power")).get<std::int16_t>();
+                            game_units[i].attack(&game_units[i2]);
                             //攻撃したフラグを立てる
                             has_attacked = true;
-                            //攻撃の効果音
-                            hit_pop_1.playOneShot();
-                            //クールダウン
-                            game_units[i].cooldown = config_json.at(json::json_pointer("/" + game_units[i].type + "/cooldown")).get<std::int16_t>();
                         }
                     }
                     //攻撃したかの判定
                     if (!has_attacked) {
                         //移動
-                        if (game_units[i].is_player_camp){
-                            game_units[i].x += config_json.at(json::json_pointer("/" + game_units[i].type + "/speed")).get<std::int16_t>();
-                        } else{
-                            game_units[i].x -= config_json.at(json::json_pointer("/" + game_units[i].type + "/speed")).get<std::int16_t>();
-                        }
+                        game_units[i].go();
+                    } else {
+                        //攻撃の効果音
+                        hit_pop_1.playOneShot();
                     }
                 } else {
                     game_units[i].cooldown --;

@@ -37,7 +37,7 @@
 		2C5C470F26B4F08A005E8C85 /* libopus.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C5C470D26B4F08A005E8C85 /* libopus.a */; };
 		2C5C471126B4F08E005E8C85 /* libzlib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C5C471026B4F08E005E8C85 /* libzlib.a */; };
 		2C6906D82298140F00A427D0 /* engine in Resources */ = {isa = PBXBuildFile; fileRef = 2C6906D72298140F00A427D0 /* engine */; };
-		A574ABA527FA7F8D009D15EB /* resource in Resources */ = {isa = PBXBuildFile; fileRef = A574ABA427FA7F8D009D15EB /* resource */; };
+		A530BEA327FD9BD600FB61E1 /* App in Resources */ = {isa = PBXBuildFile; fileRef = A530BEA227FD9BD600FB61E1 /* App */; };
 		A5FE32A927FC7EC400DAA541 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = A5FE32A827FC7EC400DAA541 /* README.md */; };
 /* End PBXBuildFile section */
 
@@ -74,8 +74,9 @@
 		2C5C470D26B4F08A005E8C85 /* libopus.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libopus.a; path = ../../lib/macOS/opus/libopus.a; sourceTree = "<group>"; };
 		2C5C471026B4F08E005E8C85 /* libzlib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libzlib.a; path = ../../lib/macOS/zlib/libzlib.a; sourceTree = "<group>"; };
 		2C6906D72298140F00A427D0 /* engine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = engine; path = App/engine; sourceTree = "<group>"; };
-		A574ABA427FA7F8D009D15EB /* resource */ = {isa = PBXFileReference; lastKnownFileType = folder; name = resource; path = App/resource; sourceTree = "<group>"; };
-		A574ABA727FA7FDD009D15EB /* json.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = json.hpp; sourceTree = "<group>"; };
+		A530BEA227FD9BD600FB61E1 /* App */ = {isa = PBXFileReference; lastKnownFileType = folder; path = App; sourceTree = "<group>"; };
+		A5470BC227FD1BCE00B2F853 /* json.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = json.hpp; sourceTree = "<group>"; };
+		A5470BC327FD1BD300B2F853 /* Main.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Main.hpp; sourceTree = "<group>"; };
 		A5FE32A827FC7EC400DAA541 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -121,11 +122,10 @@
 			isa = PBXGroup;
 			children = (
 				A5FE32A827FC7EC400DAA541 /* README.md */,
-				A574ABA627FA7FDD009D15EB /* include */,
-				A574ABA427FA7F8D009D15EB /* resource */,
-				2C6906D72298140F00A427D0 /* engine */,
 				2C1778921CE0A9EA00BB8AD0 /* Info.plist */,
 				2C1778A21CE0B65500BB8AD0 /* icon.icns */,
+				A530BEA227FD9BD600FB61E1 /* App */,
+				2C6906D72298140F00A427D0 /* engine */,
 				2C1778981CE0AA7C00BB8AD0 /* src */,
 				2C1778851CE0A9EA00BB8AD0 /* Products */,
 				2CC7F9861F45930A0071A239 /* Frameworks */,
@@ -144,6 +144,8 @@
 			isa = PBXGroup;
 			children = (
 				2C1778991CE0AA7C00BB8AD0 /* Main.cpp */,
+				A5470BC227FD1BCE00B2F853 /* json.hpp */,
+				A5470BC327FD1BD300B2F853 /* Main.hpp */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -180,14 +182,6 @@
 				2C5C46DC26B4F00D005E8C85 /* libcurl.tbd */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		A574ABA627FA7FDD009D15EB /* include */ = {
-			isa = PBXGroup;
-			children = (
-				A574ABA727FA7FDD009D15EB /* json.hpp */,
-			);
-			path = include;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -246,10 +240,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A530BEA327FD9BD600FB61E1 /* App in Resources */,
 				2C6906D82298140F00A427D0 /* engine in Resources */,
 				2C1778A31CE0B65500BB8AD0 /* icon.icns in Resources */,
 				A5FE32A927FC7EC400DAA541 /* README.md in Resources */,
-				A574ABA527FA7F8D009D15EB /* resource in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -271,6 +265,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
@@ -311,6 +307,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
@@ -371,7 +369,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -452,7 +450,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
