@@ -40,13 +40,16 @@ public:
     bool is_player_camp;
     std::string type;
     int16 durability;
-    void set_data(std::string type, bool is_player_camp);
+    uint16 attack_power;
+    uint16 speed;
+    uint16 reset_cooldown;
+    game_unit(std::string type, bool is_player_camp);
     uint16 cooldown = 0;
     void go();
     void attack(game_unit *target);
 };
 
-void game_unit::set_data(std::string type, bool is_player_camp){
+game_unit::game_unit(std::string type, bool is_player_camp){
     if (is_player_camp){
         this->x = 0;
     } else{
@@ -54,23 +57,26 @@ void game_unit::set_data(std::string type, bool is_player_camp){
     }
     this->type = type;
     this->is_player_camp = is_player_camp;
-    this->durability = get_json_value("resource/config.json","/" + type + "/durability").get<std::uint16_t>();
+    this->durability = get_json_value("resource/config.json","/" + type + "/durability").get<uint16>();
+    this->attack_power = get_json_value("resource/config.json","/" + type + "/attack_power").get<uint16>();
+    this->speed = get_json_value("resource/config.json","/" + type + "/speed").get<uint16>();
+    this->reset_cooldown = get_json_value("resource/config.json","/" + type + "/cooldown").get<uint16>();
 
 }
 void game_unit::go(){
     //移動
     if (this->is_player_camp){
-        this->x += get_json_value("resource/config.json","/" + this->type + "/speed").get<std::int16_t>();
+        this->x += this->speed;
     } else{
-        this->x -= get_json_value("resource/config.json","/" + this->type + "/speed").get<std::int16_t>();
+        this->x -= this->speed;
     }
 }
 
 void game_unit::attack(game_unit *target){
     //攻撃処理
-    target->durability -= get_json_value("resource/config.json","/" + this->type + "/attack_power").get<std::int16_t>();
+    target->durability -= this->attack_power;
     //クールダウン
-    this->cooldown = get_json_value("resource/config.json","/" + this->type + "/cooldown").get<std::int16_t>();
+    this->cooldown = this->reset_cooldown;
 }
 
 }

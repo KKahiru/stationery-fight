@@ -58,6 +58,9 @@ void Main(){
     }
     //cout << law_config_json << endl;
     json config_json = json::parse(law_config_json);*/
+    //城を造る
+    game_units.push_back(game_unit("castle",true));
+    game_units.push_back(game_unit("castle",false));
     while (System::Update())
     {
         accumulator += Scene::DeltaTime();
@@ -67,18 +70,23 @@ void Main(){
          const Vec2 pos = OffsetCircular{ Scene::Center(), 100, theta };
          Circle{ pos , 20 }.draw(ColorF{ 0.25 });
          }*/
-        if (SimpleGUI::Button(U"味方召喚", Vec2{ 100, 100 }))
+        //仮GUI
+        if (SimpleGUI::Button(U"味方鉛筆召喚", Vec2{ 0, 100 }))
         {
-            game_unit new_game_unit;
-            new_game_unit.set_data("pencil",true);
-            game_units.push_back(new_game_unit);
+            game_units.push_back(game_unit("pencil",true));
             
         }
-        if (SimpleGUI::Button(U"敵召喚", Vec2{ 300, 100 }))
+        if (SimpleGUI::Button(U"敵鉛筆召喚", Vec2{ 200, 100 }))
         {
-            game_unit new_game_unit;
-            new_game_unit.set_data("pencil",false);
-            game_units.push_back(new_game_unit);
+            game_units.push_back(game_unit("pencil",false));
+        }
+        if (SimpleGUI::Button(U"味方消しゴム召喚", Vec2{ 400, 100 }))
+        {
+            game_units.push_back(game_unit("eraser",true));
+        }
+        if (SimpleGUI::Button(U"敵消しゴム召喚", Vec2{ 600, 100 }))
+        {
+            game_units.push_back(game_unit("eraser",true));
         }
         //game_unitの描画
         for (unsigned long int i = 0; i < game_units.size(); i++) {
@@ -101,8 +109,12 @@ void Main(){
                     for (unsigned long int i2 = 0; i2 < game_units.size(); i2++) {
                         //相手が敵かどうかを判別する長い長い条件文
                         if ( (game_units[i].is_player_camp and !game_units[i2].is_player_camp and game_units[i2].x>=game_units[i].x and game_units[i2].x <= game_units[i].x + 100) or (!game_units[i].is_player_camp and game_units[i2].is_player_camp and game_units[i2].x>=game_units[i].x - 100 and game_units[i2].x <= game_units[i].x ) ){
-                            
+                            //攻撃
                             game_units[i].attack(&game_units[i2]);
+                            //攻撃時の、種類ごとのユニークな処理
+                            if (game_units[i].type == "eraser") {
+                                    game_units[i].durability -= 5;
+                            }
                             //攻撃したフラグを立てる
                             has_attacked = true;
                         }
@@ -122,6 +134,7 @@ void Main(){
             //破壊判定
             for (long int i = game_units.size() - 1; i >= 0;  i--) {
                 if (game_units[i].durability <= 0){
+                    //削除
                     game_units.erase(game_units.begin() + i);
                 }
             }

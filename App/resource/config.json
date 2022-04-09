@@ -10,5 +10,12 @@
     "attack_power" : 60,
     "cooldown" : 25,
     "speed" : 5
+  },
+  "castle" : {
+    "durability" : 850,
+    "$attack_power_comment" : "The value shoud be 80 in release build.",
+    "attack_power" : 0,
+    "cooldown" : 25,
+    "speed" : 0
   }
 }
