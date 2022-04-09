@@ -37,7 +37,7 @@ nlohmann::json get_json_value(std::string file_path, std::string json_path){
 class game_unit{
 public:
     uint16 x;
-    bool is_player_camp;
+    bool is_friend;
     std::string type;
     int16 durability;
     uint16 attack_power;
@@ -49,14 +49,14 @@ public:
     void attack(game_unit *target);
 };
 
-game_unit::game_unit(std::string type, bool is_player_camp){
-    if (is_player_camp){
+game_unit::game_unit(std::string type, bool is_friend){
+    if (is_friend){
         this->x = 0;
     } else{
         this->x = 800;
     }
     this->type = type;
-    this->is_player_camp = is_player_camp;
+    this->is_friend = is_friend;
     this->durability = get_json_value("resource/config.json","/" + type + "/durability").get<uint16>();
     this->attack_power = get_json_value("resource/config.json","/" + type + "/attack_power").get<uint16>();
     this->speed = get_json_value("resource/config.json","/" + type + "/speed").get<uint16>();
@@ -65,7 +65,7 @@ game_unit::game_unit(std::string type, bool is_player_camp){
 }
 void game_unit::go(){
     //移動
-    if (this->is_player_camp){
+    if (this->is_friend){
         this->x += this->speed;
     } else{
         this->x -= this->speed;
