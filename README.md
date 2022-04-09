@@ -1,5 +1,5 @@
 # stationery-fight
-##　OSごとに使うファイル
+## OS dependents files
 ### Windows 10
 - .vs
 - .editcoding
@@ -7,5 +7,5 @@
 - stdafx.cpp
 - stdafx.h
 - App/dll
-- App/icon(中身はicon.icns)
+- App/icon.ico(icon.icns)
 - App/shader/d3d11
