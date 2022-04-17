@@ -10,49 +10,62 @@ using namespace stfi;
 using json = nlohmann::json;
 
 void Main(){
+    const int texture_size = 80;
+    //テクスチャーの定義
+    //鉛筆
+    TextureRegion texture_pencil_friend = Texture{ Resource(U"resource/texture/pencil_friend.png") }.resized(texture_size);
+    TextureRegion texture_pencil_friend_attack = Texture{ Resource(U"resource/texture/pencil_friend_attack.png") }.resized(texture_size);
+    TextureRegion texture_pencil_enemy = Texture{ Resource(U"resource/texture/pencil_enemy.png") }.resized(texture_size);
+    TextureRegion texture_pencil_enemy_attack = Texture{ Resource(U"resource/texture/pencil_enemy_attack.png") }.resized(texture_size);
+    //消しゴム
+    TextureRegion texture_eraser_friend = Texture{ Resource(U"resource/texture/eraser_friend.png") }.resized(texture_size);
+    TextureRegion texture_eraser_friend_attack = Texture{ Resource(U"resource/texture/eraser_friend_attack.png") }.resized(texture_size);
+    TextureRegion texture_eraser_enemy = Texture{ Resource(U"resource/texture/eraser_enemy.png") }.resized(texture_size);
+    TextureRegion texture_eraser_enemy_attack = Texture{ Resource(U"resource/texture/eraser_enemy_attack.png") }.resized(texture_size);
+    TextureRegion texture_castle = Texture{ Resource(U"resource/texture/castle.png") }.resized(texture_size * 2);
+    
     Scene::SetBackground(Palette::White);
     const Audio hit_pop_1{U"resource/sound/hit_pop_1.ogg"};
     // 蓄積された時間（秒）
     double accumulator = 0.0;
     //ステージ上のgame_unitのリスト
     vector<game_unit> game_units;
-    //テクスチャーの定義
-    const TextureRegion texture_eraser_friend = Texture{ U"resource/texture/eraser_friend.png" }.resized(40);
-    const TextureRegion texture_eraser_friend_attack = Texture{ U"resource/texture/eraser_friend_attack.png" }.resized(40);
-    const TextureRegion texture_eraser_enemy = Texture{ U"resource/texture/eraser_enemy.png" }.resized(40);
-    const TextureRegion texture_eraser_enemy_attack = Texture{ U"resource/texture/eraser_enemy_attack.png" }.resized(40);
     //城を造る
-    game_units.push_back(game_unit("castle",true));
-    game_units.push_back(game_unit("castle",false));
+    game_units.push_back(game_unit("castle",true,&texture_castle,&texture_castle));
+    game_units.push_back(game_unit("castle",false,&texture_castle,&texture_castle));
     while (System::Update())
     {
         accumulator += Scene::DeltaTime();
         //仮GUI
         if (SimpleGUI::Button(U"味方鉛筆召喚", Vec2{ 0, 100 }))
         {
-            game_units.push_back(game_unit("pencil",true));
+            game_units.push_back(game_unit("pencil",true,&texture_pencil_friend,&texture_pencil_friend_attack));
             
         }
         if (SimpleGUI::Button(U"敵鉛筆召喚", Vec2{ 200, 100 }))
         {
-            game_units.push_back(game_unit("pencil",false));
+            game_units.push_back(game_unit("pencil",false,&texture_pencil_enemy,&texture_pencil_enemy_attack));
         }
         if (SimpleGUI::Button(U"味方消しゴム召喚", Vec2{ 400, 100 }))
         {
-            game_units.push_back(game_unit("eraser",true));
+            game_units.push_back(game_unit("eraser",true,&texture_eraser_friend,&texture_eraser_friend_attack));
         }
         if (SimpleGUI::Button(U"敵消しゴム召喚", Vec2{ 600, 100 }))
         {
-            game_units.push_back(game_unit("eraser",false));
+            game_units.push_back(game_unit("eraser",false,&texture_eraser_enemy,&texture_eraser_enemy_attack));
         }
         //game_unitの描画
         for (unsigned long int i = 0; i < game_units.size(); i++) {
-            if (game_units[i].is_friend) {
-                texture_eraser_friend.drawAt(game_units[i].x , 300);
-            } else {
-               texture_eraser_enemy.drawAt(game_units[i].x , 300);
+            int overlapped_unit_count = 0;
+            for (long int i2 = 0; i2 < distance(game_units.begin(), game_units.begin() + i); i2++){
+                overlapped_unit_count++;
             }
-            
+            if (game_units[i].cooldown > game_units[i].reset_cooldown/5*3){
+                game_units[i].attack_texture->drawAt(game_units[i].x , Scene::Center().x - overlapped_unit_count);
+            } else {
+                 game_units[i].texture->drawAt(game_units[i].x , Scene::Center().x - overlapped_unit_count);
+            }
+               
         }
         //game_unitの行動処理
         while ( 0.1 <= accumulator) {

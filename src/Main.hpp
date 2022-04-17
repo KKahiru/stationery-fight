@@ -3,10 +3,11 @@
 #include <iostream>
 #include "json.hpp"
 #include <fstream> //ファイルシステム
-#include <Siv3D/FormatBool.hpp> //Bool型
-#include <Siv3D/FormatInt.hpp> //整数型
+#include <Siv3D.hpp> //Bool型
+
 
 namespace stfi{
+
 nlohmann::json get_json_value(std::string file_path, std::string json_path){
     //config.jsonを開く
     std::ifstream json_file(file_path, std::ios::in);
@@ -36,20 +37,25 @@ nlohmann::json get_json_value(std::string file_path, std::string json_path){
     
 class game_unit{
 public:
+    //x座標
     uint16 x;
+    //味方かのbool値
     bool is_friend;
+    //
     std::string type;
     int16 durability;
     uint16 attack_power;
     uint16 speed;
     uint16 reset_cooldown;
-    game_unit(std::string type, bool is_player_camp);
+    game_unit(std::string type, bool is_player_camp, TextureRegion *texture, TextureRegion *attack_texture);
     uint16 cooldown = 0;
+    TextureRegion *texture;
+    TextureRegion *attack_texture;
     void go();
     void attack(game_unit *target);
 };
 
-game_unit::game_unit(std::string type, bool is_friend){
+game_unit::game_unit(std::string type, bool is_friend, TextureRegion *texture, TextureRegion *attack_texture){
     if (is_friend){
         this->x = 0;
     } else{
@@ -61,7 +67,8 @@ game_unit::game_unit(std::string type, bool is_friend){
     this->attack_power = get_json_value("resource/config.json","/" + type + "/attack_power").get<uint16>();
     this->speed = get_json_value("resource/config.json","/" + type + "/speed").get<uint16>();
     this->reset_cooldown = get_json_value("resource/config.json","/" + type + "/cooldown").get<uint16>();
-
+    this->texture = texture;
+    this->attack_texture = attack_texture;
 }
 void game_unit::go(){
     //移動

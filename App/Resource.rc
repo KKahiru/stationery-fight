@@ -119,9 +119,21 @@ Resource(engine/soundfont/GMGSx.sf2.zstdcmp)
 //
 //////////////////////////////////////////////////////
 
+//
+//  Textures
+//
 
-
-/* examples 
+// eraser
+Resource(resource/texture/eraser_friend.png)
+Resource(resource/texture/eraser_friend_attack.png)
+Resource(resource/texture/eraser_enemy.png)
+Resource(resource/texture/eraser_enemy_attack.png)
+// pencil
+Resource(resource/texture/pencil_friend.png)
+Resource(resource/texture/pencil_friend_attack.png)
+Resource(resource/texture/pencil_enemy.png)
+Resource(resource/texture/pencil_enemy_attack.png)
+/* examples
 
 	//
 	// Define your resource path inside `Resource()` macro.
