@@ -3,6 +3,7 @@
 #include <iostream>
 #include "json.hpp"
 #include <fstream> //ファイルシステム
+#include <cstdlib> //abortの定義
 #include <Siv3D.hpp> //Bool型
 
 
@@ -35,27 +36,42 @@ nlohmann::json get_json_value(std::string file_path, std::string json_path){
     nlohmann::json result = json_data.at(nlohmann::json::json_pointer(json_path));
     return result;
 }
-    
+
 class game_unit{
 public:
-    //x座標
-    uint16 x;
     //味方かのbool値
     bool is_friend;
-    //
+    //game_unitのタイプ
     std::string type;
-    int16 durability;
+    //攻撃力
     uint16 attack_power;
+    //移動速度
     uint16 speed;
+    //攻撃時にセットするクールダウン
     uint16 reset_cooldown;
-    game_unit(std::string type, bool is_player_camp);
+    //攻撃範囲の始まり
+    uint16 attack_range_begin;
+    //攻撃範囲の終わり
+    uint16 attack_range_end;
+    //x座標
+    uint16 x;
+    //耐久値
+    int16 durability;
+    //クールダウン
     uint16 cooldown = 0;
+    //コンストラクター
+    game_unit(std::string type, bool is_player_camp);
+    //通常時テクスチャー
     TextureRegion texture;
+    //攻撃時テクスチャー
     TextureRegion attack_texture;
+    //移動
     void go();
+    //相手を攻撃
     void attack(game_unit *target);
 };
 
+//コンストラクターの定義
 game_unit::game_unit(std::string type, bool is_friend){
     if (is_friend){
         this->x = 0;
@@ -75,17 +91,22 @@ game_unit::game_unit(std::string type, bool is_friend){
         this->texture = Texture{ Resource(U"resource/texture/" + Unicode::Widen(type) + U"_enemy.png") }.resized(texture_size);
         this->attack_texture = Texture{ Resource(U"resource/texture/" + Unicode::Widen(type) + U"_enemy_attack.png") }.resized(texture_size);
     }
+    this->attack_range_begin = get_json_value("resource/config.json","/" + type + "/attack_range_begin").get<uint16>();
+    this->attack_range_end = get_json_value("resource/config.json","/" + type + "/attack_range_end").get<uint16>();
     
 }
+//移動する関数の定義
 void game_unit::go(){
-    //移動
+    //味方かの判定
     if (this->is_friend){
+        //正の方向に移動
         this->x += this->speed;
     } else{
+        //負の方向に移動
         this->x -= this->speed;
     }
 }
-
+//相手を攻撃する関数の定義
 void game_unit::attack(game_unit *target){
     //攻撃処理
     target->durability -= this->attack_power;

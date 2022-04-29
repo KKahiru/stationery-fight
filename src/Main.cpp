@@ -67,8 +67,10 @@ void Main(){
                     bool has_attacked = false;
                     //攻撃するgame_unitの検索
                     for (unsigned long int i2 = 0; i2 < game_units.size(); i2++) {
-                        //相手が敵かどうかを判別する長い長い条件文
-                        if ( (game_units[i].is_friend and !game_units[i2].is_friend and game_units[i2].x>=game_units[i].x and game_units[i2].x <= game_units[i].x + 100) or (!game_units[i].is_friend and game_units[i2].is_friend and game_units[i2].x>=game_units[i].x - 100 and game_units[i2].x <= game_units[i].x ) ){
+                        //相手が敵で、攻撃範囲内にいるかを判別する
+                        if ( game_units[i].is_friend
+                            ? !game_units[i2].is_friend and game_units[i2].x >= game_units[i].x + game_units[i].attack_range_begin and game_units[i2].x <= game_units[i].x + game_units[i].attack_range_end
+                            : game_units[i2].is_friend and game_units[i2].x >= game_units[i].x - game_units[i].attack_range_end and game_units[i2].x <= game_units[i].x - game_units[i].attack_range_begin ){
                             //攻撃
                             game_units[i].attack(&game_units[i2]);
                             //攻撃時の、種類ごとのユニークな処理
