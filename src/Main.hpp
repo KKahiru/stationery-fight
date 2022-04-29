@@ -7,6 +7,7 @@
 
 
 namespace stfi{
+const int texture_size = 80;
 
 nlohmann::json get_json_value(std::string file_path, std::string json_path){
     //config.jsonを開く
@@ -47,15 +48,15 @@ public:
     uint16 attack_power;
     uint16 speed;
     uint16 reset_cooldown;
-    game_unit(std::string type, bool is_player_camp, TextureRegion *texture, TextureRegion *attack_texture);
+    game_unit(std::string type, bool is_player_camp);
     uint16 cooldown = 0;
-    TextureRegion *texture;
-    TextureRegion *attack_texture;
+    TextureRegion texture;
+    TextureRegion attack_texture;
     void go();
     void attack(game_unit *target);
 };
 
-game_unit::game_unit(std::string type, bool is_friend, TextureRegion *texture, TextureRegion *attack_texture){
+game_unit::game_unit(std::string type, bool is_friend){
     if (is_friend){
         this->x = 0;
     } else{
@@ -67,8 +68,14 @@ game_unit::game_unit(std::string type, bool is_friend, TextureRegion *texture, T
     this->attack_power = get_json_value("resource/config.json","/" + type + "/attack_power").get<uint16>();
     this->speed = get_json_value("resource/config.json","/" + type + "/speed").get<uint16>();
     this->reset_cooldown = get_json_value("resource/config.json","/" + type + "/cooldown").get<uint16>();
-    this->texture = texture;
-    this->attack_texture = attack_texture;
+    if (is_friend){
+        this->texture = Texture{ Resource(U"resource/texture/" + Unicode::Widen(type) + U"_friend.png") }.resized(texture_size);
+        this->attack_texture = Texture{ Resource(U"resource/texture/" + Unicode::Widen(type) + U"_friend_attack.png") }.resized(texture_size);
+    } else{
+        this->texture = Texture{ Resource(U"resource/texture/" + Unicode::Widen(type) + U"_enemy.png") }.resized(texture_size);
+        this->attack_texture = Texture{ Resource(U"resource/texture/" + Unicode::Widen(type) + U"_enemy_attack.png") }.resized(texture_size);
+    }
+    
 }
 void game_unit::go(){
     //移動

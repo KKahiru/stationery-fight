@@ -1,11 +1,8 @@
 
 .DS_Store
-move.xcodeproj/project.pbxproj
-move.xcodeproj/project.pbxproj
 App/Stationery Fight.app
 Intermediate
 App/Stationery-Fight(*).exe
 App/AS_DEBUG
-.vs/stationery-fight/v16/ipch/*
-.vs/stationery-fight/v16/Browse.VC.*
+.vs
 Stationery Fight.xcodeproj/project.xcworkspace

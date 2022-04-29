@@ -1,8 +1,6 @@
 # include <Siv3D.hpp>
 #include <iostream>
 #include <vector>
-#include <fstream> //ファイルシステム
-#include <cstdlib> //quick_exitの定義
 #include "json.hpp"
 #include "Main.hpp"
 using namespace std;
@@ -10,70 +8,62 @@ using namespace stfi;
 using json = nlohmann::json;
 
 void Main(){
-    const int texture_size = 80;
-    //テクスチャーの定義
-    //鉛筆
-    TextureRegion texture_pencil_friend = Texture{ Resource(U"resource/texture/pencil_friend.png") }.resized(texture_size);
-    TextureRegion texture_pencil_friend_attack = Texture{ Resource(U"resource/texture/pencil_friend_attack.png") }.resized(texture_size);
-    TextureRegion texture_pencil_enemy = Texture{ Resource(U"resource/texture/pencil_enemy.png") }.resized(texture_size);
-    TextureRegion texture_pencil_enemy_attack = Texture{ Resource(U"resource/texture/pencil_enemy_attack.png") }.resized(texture_size);
-    //消しゴム
-    TextureRegion texture_eraser_friend = Texture{ Resource(U"resource/texture/eraser_friend.png") }.resized(texture_size);
-    TextureRegion texture_eraser_friend_attack = Texture{ Resource(U"resource/texture/eraser_friend_attack.png") }.resized(texture_size);
-    TextureRegion texture_eraser_enemy = Texture{ Resource(U"resource/texture/eraser_enemy.png") }.resized(texture_size);
-    TextureRegion texture_eraser_enemy_attack = Texture{ Resource(U"resource/texture/eraser_enemy_attack.png") }.resized(texture_size);
-    TextureRegion texture_castle = Texture{ Resource(U"resource/texture/castle.png") }.resized(texture_size * 2);
-    
+    //背景を白くする
     Scene::SetBackground(Palette::White);
+    //攻撃音
     const Audio hit_pop_1{U"resource/sound/hit_pop_1.ogg"};
     // 蓄積された時間（秒）
     double accumulator = 0.0;
     //ステージ上のgame_unitのリスト
     vector<game_unit> game_units;
     //城を造る
-    game_units.push_back(game_unit("castle",true,&texture_castle,&texture_castle));
-    game_units.push_back(game_unit("castle",false,&texture_castle,&texture_castle));
-    while (System::Update())
-    {
+    game_units.push_back(game_unit("castle",true));
+    game_units.push_back(game_unit("castle",false));
+    while (System::Update()) {
+        //蓄積された秒数の記録
         accumulator += Scene::DeltaTime();
-        //仮GUI
+        //game_unitを召喚する仮GUI
         if (SimpleGUI::Button(U"味方鉛筆召喚", Vec2{ 0, 100 }))
         {
-            game_units.push_back(game_unit("pencil",true,&texture_pencil_friend,&texture_pencil_friend_attack));
-            
+            game_units.push_back(game_unit("pencil",true));
         }
         if (SimpleGUI::Button(U"敵鉛筆召喚", Vec2{ 200, 100 }))
         {
-            game_units.push_back(game_unit("pencil",false,&texture_pencil_enemy,&texture_pencil_enemy_attack));
+            game_units.push_back(game_unit("pencil",false));
         }
         if (SimpleGUI::Button(U"味方消しゴム召喚", Vec2{ 400, 100 }))
         {
-            game_units.push_back(game_unit("eraser",true,&texture_eraser_friend,&texture_eraser_friend_attack));
+            game_units.push_back(game_unit("eraser",true));
         }
         if (SimpleGUI::Button(U"敵消しゴム召喚", Vec2{ 600, 100 }))
         {
-            game_units.push_back(game_unit("eraser",false,&texture_eraser_enemy,&texture_eraser_enemy_attack));
+            game_units.push_back(game_unit("eraser",false));
         }
         //game_unitの描画
         for (unsigned long int i = 0; i < game_units.size(); i++) {
+            //自分の前に重なっているgame_unitのカウント数
             int overlapped_unit_count = 0;
             for (long int i2 = 0; i2 < distance(game_units.begin(), game_units.begin() + i); i2++){
+                //カウント
                 overlapped_unit_count++;
             }
-            if (game_units[i].cooldown > game_units[i].reset_cooldown/5*3){
-                game_units[i].attack_texture->drawAt(game_units[i].x , Scene::Center().x - overlapped_unit_count);
+            //攻撃しているか
+            if (game_units[i].cooldown > game_units[i].reset_cooldown / 5 * 3){
+                //攻撃テクスチャーで描画
+                game_units[i].attack_texture.drawAt(game_units[i].x , Scene::Center().x - overlapped_unit_count);
             } else {
-                 game_units[i].texture->drawAt(game_units[i].x , Scene::Center().x - overlapped_unit_count);
+                //通常テクスチャーで描画
+                game_units[i].texture.drawAt(game_units[i].x , Scene::Center().x - overlapped_unit_count);
             }
-               
         }
         //game_unitの行動処理
         while ( 0.1 <= accumulator) {
             for (unsigned long int i = 0; i < game_units.size(); i++) {
                 //情報を残すコード
-                cout << "No." << i << "| X:" << game_units[i].x << "| type:" << game_units[i].type << "| isPlayerCamp:" << game_units[i].is_friend  << "| health:" << game_units[i].durability <<endl;
+                //cout << "No." << i << "| X:" << game_units[i].x << "| type:" << game_units[i].type << "| isPlayerCamp:" << game_units[i].is_friend  << "| health:" << game_units[i].durability <<endl;
                 //クールダウンが終わったかの判定
                 if (game_units[i].cooldown == 0){
+                    //攻撃したかのフラグ
                     bool has_attacked = false;
                     //攻撃するgame_unitの検索
                     for (unsigned long int i2 = 0; i2 < game_units.size(); i2++) {
@@ -83,7 +73,7 @@ void Main(){
                             game_units[i].attack(&game_units[i2]);
                             //攻撃時の、種類ごとのユニークな処理
                             if (game_units[i].type == "eraser") {
-                                    game_units[i].durability -= 5;
+                                game_units[i].durability -= 5;
                             }
                             //攻撃したフラグを立てる
                             has_attacked = true;
@@ -98,6 +88,7 @@ void Main(){
                         hit_pop_1.playOneShot();
                     }
                 } else {
+                    //クールダウンのカウントを減らす
                     game_units[i].cooldown --;
                 }
             }
@@ -108,7 +99,9 @@ void Main(){
                     game_units.erase(game_units.begin() + i);
                 }
             }
+            //ログの区切り線
             //cout << "-----" << endl;
+            //蓄積された秒数を減らす
             accumulator -= 0.1;
         }
     }
