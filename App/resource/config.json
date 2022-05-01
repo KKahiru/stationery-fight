@@ -16,7 +16,7 @@
         "attack_range_end": 60
     },
     "triangle": {
-        "durability": 850,
+        "durability": 150,
         "attack_power": 80,
         "cooldown": 25,
         "speed": 3,

@@ -133,6 +133,12 @@ Resource(resource/texture/pencil_friend.png)
 Resource(resource/texture/pencil_friend_attack.png)
 Resource(resource/texture/pencil_enemy.png)
 Resource(resource/texture/pencil_enemy_attack.png)
+
+//
+// Sounds
+//
+Resource(resource/sound/hit_pop_1.ogg)
+
 /* examples
 
 	//

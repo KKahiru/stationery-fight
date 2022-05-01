@@ -11,7 +11,7 @@ void Main(){
     //背景を白くする
     Scene::SetBackground(Palette::White);
     //攻撃音
-    const Audio hit_pop_1{U"resource/sound/hit_pop_1.ogg"};
+    const Audio hit_pop_1{Resource(U"resource/sound/hit_pop_1.ogg")};
     // 蓄積された時間（秒）
     double accumulator = 0.0;
     //ステージ上のgame_unitのリスト
