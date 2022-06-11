@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="120.0px"
+   height="120.0px"
+   viewBox="0 0 120.0 120.0"
+   version="1.1"
+   id="SVGRoot"
+   sodipodi:docname="triangle_friend.svg"
+   inkscape:version="1.1.2 (b8e25be8, 2022-02-05)"
+   inkscape:export-filename="/Users/iwahashikeigo/Documents/icons/stationery/inkscape-svg/triangle_friend.png"
+   inkscape:export-xdpi="384"
+   inkscape:export-ydpi="384"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview841"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:document-units="px"
+     showgrid="true"
+     inkscape:zoom="6.2217172"
+     inkscape:cx="54.647293"
+     inkscape:cy="67.425115"
+     inkscape:window-width="1701"
+     inkscape:window-height="1081"
+     inkscape:window-x="120"
+     inkscape:window-y="117"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid904" />
+  </sodipodi:namedview>
+  <defs
+     id="defs836" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:#66e1ff;stroke:#8ce8ff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:0.70622563;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 118.82221,89.931468 1.1847944,89.089916 60.424277,30.691987 Z"
+       id="path855"
+       sodipodi:nodetypes="cccc" />
+    <g
+       id="path2211" />
+    <circle
+       style="fill:#f8f8f8;fill-opacity:0.40000001;stroke:#8ce8ff;stroke-width:1;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       id="path4361"
+       cx="60"
+       cy="70"
+       r="5" />
+  </g>
+</svg>

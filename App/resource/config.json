@@ -1,43 +1,46 @@
 {
-    "pencil": {
-        "durability": 100,
-        "attack_power": 20,
-        "cooldown": 20,
-        "speed": 3,
-        "attack_range_begin": 0,
-        "attack_range_end": 100
-    },
-    "eraser": {
-        "durability": 50,
-        "attack_power": 40,
-        "cooldown": 10,
-        "speed": 5,
-        "attack_range_begin": 0,
-        "attack_range_end": 60
-    },
-    "triangle": {
-        "durability": 150,
-        "attack_power": 80,
-        "cooldown": 25,
-        "speed": 3,
-        "attack_range_begin": -20,
-        "attack_range_end": 200
-    },
-    "ink_eraser": {
-        "durability": 65,
-        "attack_power": 120,
-        "cooldown": 10,
-        "speed": 10,
-        "attack_range_begin": 0,
-        "attack_range_end": 60
-    },
-    "castle": {
-        "durability": 850,
-        "$attack_power_comment": "The value shoud be 80 in release build.",
-        "attack_power": 80,
-        "cooldown": 25,
-        "speed": 0,
-        "attack_range_begin": 0,
-        "attack_range_end": 100
+    "all_types":["pencil","eraser","triangle"],
+    "ability_config":{
+        "pencil": {
+            "durability": 100,
+            "attack_power": 20,
+            "cooldown": 20,
+            "speed": 3,
+            "attack_range_begin": 0,
+            "attack_range_end": 100
+        },
+        "eraser": {
+            "durability": 50,
+            "attack_power": 40,
+            "cooldown": 10,
+            "speed": 5,
+            "attack_range_begin": 0,
+            "attack_range_end": 60
+        },
+        "triangle": {
+            "durability": 150,
+            "attack_power": 80,
+            "cooldown": 25,
+            "speed": 3,
+            "attack_range_begin": 0,
+            "attack_range_end": 200
+        },
+        "ink_eraser": {
+            "durability": 65,
+            "attack_power": 120,
+            "cooldown": 10,
+            "speed": 10,
+            "attack_range_begin": 0,
+            "attack_range_end": 60
+        },
+        "castle": {
+            "durability": 850,
+            "$attack_power_comment": "The value should be 80 in release build.",
+            "attack_power": 80,
+            "cooldown": 25,
+            "speed": 0,
+            "attack_range_begin": 0,
+            "attack_range_end": 100
+        }
     }
 }
