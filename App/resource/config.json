@@ -2,45 +2,71 @@
     "all_types":["pencil","eraser","triangle"],
     "ability_config":{
         "pencil": {
+            "ja_name": "鉛筆",
+            "feauture": "normal",
             "durability": 100,
             "attack_power": 20,
             "cooldown": 20,
             "speed": 3,
             "attack_range_begin": 0,
-            "attack_range_end": 100
+            "attack_range_end": 100,
+            "cost": 100
         },
         "eraser": {
+            "ja_name": "消しゴム",
+            "feauture": "eraser",
             "durability": 50,
             "attack_power": 40,
             "cooldown": 10,
             "speed": 5,
             "attack_range_begin": 0,
-            "attack_range_end": 60
+            "attack_range_end": 60,
+            "cost": 70
         },
         "triangle": {
-            "durability": 150,
+            "ja_name": "三角定規",
+            "feauture": "long_lange",
+            "durability": 175,
             "attack_power": 80,
             "cooldown": 25,
             "speed": 3,
             "attack_range_begin": 0,
-            "attack_range_end": 200
+            "attack_range_end": 250,
+            "cost": 250
         },
         "ink_eraser": {
+            "ja_name": "砂消しゴム",
+            "feauture": "slider",
             "durability": 65,
             "attack_power": 120,
             "cooldown": 10,
             "speed": 10,
             "attack_range_begin": 0,
-            "attack_range_end": 60
+            "attack_range_end": 60,
+            "cost": 100
+        },
+        "mechanical_pemcil": {
+            "ja_name": "シャーペン",
+            "feature": "shot",
+            "durability": 150,
+            "attack_power": 80,
+            "cooldown": 25,
+            "speed": 3,
+            "attack_range_begin": 0,
+            "attack_range_end": 250,
+            "cost": 250
         },
         "castle": {
+            "ja_name": "城",
+            "feauture": "normal",
             "durability": 850,
             "$attack_power_comment": "The value should be 80 in release build.",
             "attack_power": 80,
             "cooldown": 25,
             "speed": 0,
             "attack_range_begin": 0,
-            "attack_range_end": 100
+            "attack_range_end": 100,
+            "cost": 65535
         }
     }
 }
