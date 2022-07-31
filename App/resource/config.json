@@ -45,22 +45,32 @@
             "attack_range_end": 60,
             "cost": 100
         },
-        "mechanical_pemcil": {
+        "mechanical_pencil": {
             "ja_name": "シャーペン",
             "feature": "shot",
-            "durability": 150,
-            "attack_power": 80,
-            "cooldown": 25,
-            "speed": 3,
+            "durability": 125,
+            "attack_power": 60,
+            "cooldown": 50,
+            "speed": 4,
             "attack_range_begin": 0,
-            "attack_range_end": 250,
-            "cost": 250
+            "attack_range_end": 600,
+            "cost": 600
+        },
+        "battery": {
+            "ja_name": "バッテリー",
+            "feature": "battery",
+            "durability": 1,
+            "attack_power": 80,
+            "cooldown": 5,
+            "speed": 2,
+            "attack_range_begin": 0,
+            "attack_range_end": 110,
+            "cost": 700
         },
         "castle": {
             "ja_name": "城",
             "feauture": "normal",
             "durability": 850,
-            "$attack_power_comment": "The value should be 80 in release build.",
             "attack_power": 80,
             "cooldown": 25,
             "speed": 0,
