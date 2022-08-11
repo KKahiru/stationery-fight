@@ -1,9 +1,9 @@
 {
-    "all_types":["pencil","eraser","triangle"],
+    "all_types":["pencil","eraser","triangle","mechanical_pencil"],
     "ability_config":{
         "pencil": {
             "ja_name": "鉛筆",
-            "feauture": "normal",
+            "feature": "normal",
             "durability": 100,
             "attack_power": 20,
             "cooldown": 20,
@@ -14,7 +14,7 @@
         },
         "eraser": {
             "ja_name": "消しゴム",
-            "feauture": "eraser",
+            "feature": "eraser",
             "durability": 50,
             "attack_power": 40,
             "cooldown": 10,
@@ -25,7 +25,7 @@
         },
         "triangle": {
             "ja_name": "三角定規",
-            "feauture": "long_lange",
+            "feature": "long_lange",
             "durability": 175,
             "attack_power": 80,
             "cooldown": 25,
@@ -36,8 +36,8 @@
         },
         "ink_eraser": {
             "ja_name": "砂消しゴム",
-            "feauture": "slider",
-            "durability": 65,
+            "feature": "eraser",
+            "durability": 100,
             "attack_power": 120,
             "cooldown": 10,
             "speed": 10,
@@ -45,27 +45,48 @@
             "attack_range_end": 60,
             "cost": 100
         },
-        "mechanical_pemcil": {
+        "mechanical_pencil": {
             "ja_name": "シャーペン",
             "feature": "shot",
-            "durability": 150,
-            "attack_power": 80,
-            "cooldown": 25,
-            "speed": 3,
+            "durability": 175,
+            "attack_power": 100,
+            "cooldown": 40,
+            "speed": 4,
             "attack_range_begin": 0,
-            "attack_range_end": 250,
-            "cost": 250
+            "attack_range_end": 600,
+            "cost": 600
+        },
+        "pencil_lead": {
+            "ja_name": "シャー芯",
+            "feature": "arrow",
+            "durability": 9999,
+            "attack_power": 100,
+            "cooldown": 65535,
+            "speed": 60,
+            "attack_range_begin": 0,
+            "attack_range_end": 60,
+            "cost": 65535
+        },
+        "battery": {
+            "ja_name": "バッテリー",
+            "feature": "battery",
+            "durability": 1,
+            "attack_power": 80,
+            "cooldown": 5,
+            "speed": 2,
+            "attack_range_begin": 0,
+            "attack_range_end": 110,
+            "cost": 700
         },
         "castle": {
             "ja_name": "城",
-            "feauture": "normal",
+            "feature": "shot",
             "durability": 850,
-            "$attack_power_comment": "The value should be 80 in release build.",
             "attack_power": 80,
             "cooldown": 25,
             "speed": 0,
             "attack_range_begin": 0,
-            "attack_range_end": 100,
+            "attack_range_end": 300,
             "cost": 65535
         }
     }
