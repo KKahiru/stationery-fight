@@ -3,6 +3,12 @@
 #include "json.hpp"
 using namespace std;
 using json = nlohmann::json;
+//MacでSceneManagerを使うための定義
+#ifdef TARGET_OS_MAC
+bool s3d::operator==(s3d::String const& left, s3d::String const& right) noexcept {
+    return left.narrow() == right.narrow();
+}
+#endif
 
 const int texture_size = 120;
 //jsonファイルを開いてパーズする変数
@@ -29,207 +35,226 @@ Type get_config_value(string type, string json_path){
     json result = config.at(json::json_pointer("/ability_config/" + type + "/" + json_path)).get<Type>();
     return result;
 }
-//game_unitのクラス
-class game_unit{
-public:
-    //味方かのbool値
-    bool is_friend;
-    //game_unitのタイプ
-    String type;
-    //x座標
-    uint16 x;
-    //耐久値
-    int16 durability;
-    //クールダウン
-    uint16 cooldown = 0;
-    //ノックバック
-    uint16 knock_back = 0;
-    //固定されているか
-    bool is_fixed = false;
-    //コンストラクター
-    game_unit(String type, bool is_player_camp);
-    //当たり判定
-    Rect collision_detection{120,120};
-};
-//コンストラクターの定義
-game_unit::game_unit(String type, bool is_friend){
-    string type_ss = type.narrow();
-    if (is_friend){
-        this->x = 40;
-    } else{
-        this->x = Scene::Size().x - 40;
-    }
-    this->type = type;
-    this->is_friend = is_friend;
-    this->durability = get_config_value<uint16>(type_ss, "durability");
-}
-//プレイヤーの情報を格納する構造体
-struct player_info{
-    uint16 money;
-    uint16 game_unit_power;
-};
-//プレイヤーと敵の情報生成
-player_info player;
-player_info enemy;
-//ステージ上のgame_unitのリスト
-Array<game_unit> game_unit_list;
-//game_unitを召喚する関数
-bool summon_game_unit(String type, bool is_friend){
-    string type_ss = type.narrow();
-    if ((is_friend ? player.money : enemy.money) >= get_config_value<uint16>(type_ss, "cost")){
-        game_unit_list.push_back(game_unit(type,is_friend));
-        (is_friend ? player.money : enemy.money) -= get_config_value<uint16>(type_ss, "cost");
-    } else {
-        return false;
-    }
-    return true;
-}
-//召喚ボタンの情報を格納する構造体
-struct summon_button{
-    summon_button(String type, uint16 count);
-    String type;
-    Texture texture;
-    uint16 x;
-    Rect background;
-    
-};
-//コンストラクターの定義
-summon_button::summon_button(String type, uint16 count){
-    //種類の登録
-    this->type = type;
-    //ボタンのX座標
-    this->x = texture_size * (count + 0.5) - 3 * count;
-    this->texture = Texture{ Resource(U"resource/texture/" + type + U"/friend.png"), TextureDesc::Mipped };
-    //ボタンの背景
-    this->background = Rect{texture_size * count - 3 * count,Scene::Size().y - texture_size,texture_size,texture_size};
-}
-//game_unitの情報を格納する構造体
-struct game_unit_info {
-    game_unit_info(String type);
-    //日本語名
-    String ja_name;
-    //特性
-    String feature;
-    //耐久力
-    uint16 durability;
-    //攻撃力
-    uint16 attack_power;
-    //移動速度
-    uint16 speed;
-    //攻撃時にセットするクールダウン
-    uint16 cooldown;
-    //攻撃範囲の始まり
-    uint16 attack_range_begin;
-    //攻撃範囲の終わり
-    uint16 attack_range_end;
-    //コスト
-    uint16 cost;
-    //通常時テクスチャー
-    Texture friend_texture;
-    //攻撃時テクスチャー
-    Texture friend_attack_texture;
-    //通常時テクスチャー
-    Texture enemy_texture;
-    //攻撃時テクスチャー
-    Texture enemy_attack_texture;
-    //通常時テクスチャの形のマスクのレンダーテクスチャ
-    RenderTexture friend_normal_mask_render_texture{ texture_size, texture_size };
-    RenderTexture enemy_normal_mask_render_texture{ texture_size, texture_size };
-    //攻撃時テクスチャの形のマスクのレンダーテクスチャ
-    RenderTexture friend_attack_mask_render_texture{ texture_size, texture_size };
-    RenderTexture enemy_attack_mask_render_texture{ texture_size, texture_size };
-    //総合的な攻撃の強さ
-    uint16 general_attack_power;
-    //通常時テクスチャをtexture_sizeにリサイズして返す関数
-    TextureRegion get_normal_texture(bool is_friend){
-        return is_friend ? this->friend_texture.resized(texture_size) : this->enemy_texture.resized(texture_size);
-    }
-    //攻撃時テクスチャをtexture_sizeにリサイズして返す関数
-    TextureRegion get_attack_texture(bool is_friend){
-        return is_friend ? this->friend_attack_texture.resized(texture_size) : this->enemy_attack_texture.resized(texture_size);
-    }
-};
-game_unit_info::game_unit_info(String type){
-    string type_ss = type.narrow();
-    this->ja_name = Unicode::Widen(get_config_value<string>(type_ss, "ja_name"));
-    this->feature = Unicode::Widen(get_config_value<string>(type_ss, "feature"));
-    this->durability = get_config_value<uint16>(type_ss, "durability");
-    this->attack_power = get_config_value<uint16>(type_ss, "attack_power");
-    this->speed = get_config_value<uint16>(type_ss, "speed");
-    this->cooldown = get_config_value<uint16>(type_ss, "cooldown");
-    this->attack_range_begin = get_config_value<uint16>(type_ss, "attack_range_begin");
-    this->attack_range_end = get_config_value<uint16>(type_ss, "attack_range_end");
-    this->cost = get_config_value<uint16>(type_ss, "cost");
-    this->friend_texture = Texture{ Resource(U"resource/texture/" + type + U"/friend.png"), TextureDesc::Mipped };
-    this->friend_attack_texture = Texture{ Resource(U"resource/texture/" + type + U"/friend_attack.png"), TextureDesc::Mipped };
-    this->enemy_texture = Texture{ Resource(U"resource/texture/" + type + U"/enemy.png"), TextureDesc::Mipped };
-    this->enemy_attack_texture = Texture{ Resource(U"resource/texture/" + type + U"/enemy_attack.png"), TextureDesc::Mipped };
-    //攻撃の総合的な強さ
-    this->general_attack_power = get_config_value<double>(type_ss, "attack_power") / get_config_value<double>(type_ss, "cooldown") * (get_config_value<double>(type_ss, "attack_range_end") - get_config_value<double>(type_ss, "attack_range_begin"));
-    // レンダーテクスチャをクリア
-    friend_normal_mask_render_texture.clear(ColorF{ 0.0, 1.0 });
-    friend_attack_mask_render_texture.clear(ColorF{ 0.0, 1.0 });
-    enemy_normal_mask_render_texture.clear(ColorF{ 0.0, 1.0 });
-    enemy_attack_mask_render_texture.clear(ColorF{ 0.0, 1.0 });
-    {
-        // レンダーターゲットをnormal_mask_render_texture.clearに設定
-        const ScopedRenderTarget2D target{ friend_normal_mask_render_texture };
-        Texture{ Resource(U"resource/texture/" + type + U"/friend_silhouette.png"), TextureDesc::Mipped }.resized(texture_size).drawAt(friend_normal_mask_render_texture.size() / 2);
-    }
-    {
-        // レンダーターゲットをattack_mask_render_textureに設定
-        const ScopedRenderTarget2D target{ friend_attack_mask_render_texture };
-        Texture{ Resource(U"resource/texture/" + type + U"/friend_attack_silhouette.png"), TextureDesc::Mipped }.resized(texture_size).drawAt(friend_attack_mask_render_texture.size() / 2);
-    }
-    {
-        // レンダーターゲットをnormal_mask_render_texture.clearに設定
-        const ScopedRenderTarget2D target{ enemy_normal_mask_render_texture };
-        Texture{ Resource(U"resource/texture/" + type + U"/enemy_silhouette.png"), TextureDesc::Mipped }.resized(texture_size).drawAt(enemy_normal_mask_render_texture.size() / 2);
-    }
-    {
-        // レンダーターゲットをattack_mask_render_textureに設定
-        const ScopedRenderTarget2D target{ enemy_attack_mask_render_texture };
-        Texture{ Resource(U"resource/texture/" + type + U"/enemy_attack_silhouette.png"), TextureDesc::Mipped }.resized(texture_size).drawAt(enemy_attack_mask_render_texture.size() / 2);
-    }
-    
-};
-//game_unit_infoの連装配列
-unordered_map<string, game_unit_info> game_unit_info_list = {};
-//game_unitからgame_unit_infoを取得する関数
-game_unit_info get_game_unit_info(game_unit& target){
-    return game_unit_info_list.at(target.type.narrow());
-}
-//ゲーム終了時のエフェクト
-struct FinishEffect : IEffect
+
+using App = SceneManager<String>;
+// タイトルシーン
+class Title : public App::Scene
 {
-    //ゲーム終了時のエフェクトのフォント
-    Font finish_font{120};
-    bool is_player_won;
-    
-    // このコンストラクタ引数が、Effect::add<FinishEffect>() の引数になる
-    explicit FinishEffect(const bool input)
-    : is_player_won{input}{}
-    
-    bool update(double t) override
+    Font title_font{80, Typeface::Bold};
+public:
+    // コンストラクタ（必ず実装）
+    Title(const InitData& init)
+    : IScene{ init }
     {
-        //描画
-        finish_font(is_player_won ? U"You Win!!" : U"You Lose...").drawAt(Scene::Center(),is_player_won ? ColorF{0.9, 0.9, 0} :  ColorF{0, 0.1, 0.9});
-        // 3 秒未満なら継続
-        return (t < 3.0);
+        
+    }
+    
+    // 更新関数（オプション）
+    void update() override
+    {
+        if (SimpleGUI::ButtonAt(U"プレイ！", Vec2{Scene::Center().x, Scene::Center().y}) ) {
+            changeScene(U"GameScene");
+        }
+    }
+    
+    // 描画関数（オプション）
+    void draw() const override
+    {
+        
+        title_font(U"Stationery Fight!").drawAt(Scene::Center().x, Scene::Center().y - 180, Palette::Dodgerblue);
+        
+        
     }
 };
-void Main(){
-    //ウィンドウサイズの設定
-    Window::Resize(1067,600);
-    Scene::SetResizeMode(ResizeMode::Keep);
-    Window::SetStyle(WindowStyle::Sizable);
-    //背景を白くする
-    Scene::SetBackground(Palette::White);
-    //一旦描画
-    System::Update();
-    config = open_json_file(Resource(U"resource/config.json"));
-    //攻撃音
-    const Audio hit_pop_1{Resource(U"resource/sound/hit_pop_1.ogg")};
+
+// タイトルシーン
+class GameScene : public App::Scene
+{
+    //game_unitのクラス
+    class game_unit{
+    public:
+        //味方かのbool値
+        bool is_friend;
+        //game_unitのタイプ
+        String type;
+        //x座標
+        uint16 x;
+        //耐久値
+        int16 durability;
+        //クールダウン
+        uint16 cooldown = 0;
+        //ノックバック
+        uint16 knock_back = 0;
+        //固定されているか
+        bool is_fixed = false;
+        //コンストラクター
+        game_unit(String type, bool is_friend){
+            string type_ss = type.narrow();
+            if (is_friend){
+                this->x = 40;
+            } else{
+                this->x = Scene::Size().x - 40;
+            }
+            this->type = type;
+            this->is_friend = is_friend;
+            this->durability = get_config_value<uint16>(type_ss, "durability");
+        };
+        //当たり判定
+        Rect collision_detection{120,120};
+    };
+    //プレイヤーの情報を格納する構造体
+    struct player_info{
+        uint16 money;
+        uint16 game_unit_power;
+    };
+    //プレイヤーと敵の情報生成
+    player_info player;
+    player_info enemy;
+    //ステージ上のgame_unitのリスト
+    Array<game_unit> game_unit_list;
+    //game_unitを召喚する関数
+    bool summon_game_unit(String type, bool is_friend){
+        string type_ss = type.narrow();
+        if ((is_friend ? player.money : enemy.money) >= get_config_value<uint16>(type_ss, "cost")){
+            game_unit_list.push_back(game_unit(type,is_friend));
+            (is_friend ? player.money : enemy.money) -= get_config_value<uint16>(type_ss, "cost");
+        } else {
+            return false;
+        }
+        return true;
+    }
+    //召喚ボタンの情報を格納する構造体
+    struct summon_button{
+        summon_button(String type, uint16 count){
+            //種類の登録
+            this->type = type;
+            //ボタンのX座標
+            this->x = texture_size * (count + 0.5) - 3 * count;
+            this->texture = Texture{ Resource(U"resource/texture/" + type + U"/friend.png"), TextureDesc::Mipped };
+            //ボタンの背景
+            this->background = Rect{texture_size * count - 3 * count,Scene::Size().y - texture_size,texture_size,texture_size};
+        };
+        String type;
+        Texture texture;
+        uint16 x;
+        Rect background;
+        
+    };
+    //game_unitの情報を格納する構造体
+    struct game_unit_info {
+        //日本語名
+        String ja_name;
+        //特性
+        String feature;
+        //耐久力
+        uint16 durability;
+        //攻撃力
+        uint16 attack_power;
+        //移動速度
+        uint16 speed;
+        //攻撃時にセットするクールダウン
+        uint16 cooldown;
+        //攻撃範囲の始まり
+        uint16 attack_range_begin;
+        //攻撃範囲の終わり
+        uint16 attack_range_end;
+        //コスト
+        uint16 cost;
+        //通常時テクスチャー
+        Texture friend_texture;
+        //攻撃時テクスチャー
+        Texture friend_attack_texture;
+        //通常時テクスチャー
+        Texture enemy_texture;
+        //攻撃時テクスチャー
+        Texture enemy_attack_texture;
+        //通常時テクスチャの形のマスクのレンダーテクスチャ
+        RenderTexture friend_normal_mask_render_texture{ texture_size, texture_size };
+        RenderTexture enemy_normal_mask_render_texture{ texture_size, texture_size };
+        //攻撃時テクスチャの形のマスクのレンダーテクスチャ
+        RenderTexture friend_attack_mask_render_texture{ texture_size, texture_size };
+        RenderTexture enemy_attack_mask_render_texture{ texture_size, texture_size };
+        //総合的な攻撃の強さ
+        uint16 general_attack_power;
+        //通常時テクスチャをtexture_sizeにリサイズして返す関数
+        TextureRegion get_normal_texture(bool is_friend){
+            return is_friend ? this->friend_texture.resized(texture_size) : this->enemy_texture.resized(texture_size);
+        }
+        //攻撃時テクスチャをtexture_sizeにリサイズして返す関数
+        TextureRegion get_attack_texture(bool is_friend){
+            return is_friend ? this->friend_attack_texture.resized(texture_size) : this->enemy_attack_texture.resized(texture_size);
+        }
+        //コンストラクター
+        game_unit_info(String type){
+            string type_ss = type.narrow();
+            this->ja_name = Unicode::Widen(get_config_value<string>(type_ss, "ja_name"));
+            this->feature = Unicode::Widen(get_config_value<string>(type_ss, "feature"));
+            this->durability = get_config_value<uint16>(type_ss, "durability");
+            this->attack_power = get_config_value<uint16>(type_ss, "attack_power");
+            this->speed = get_config_value<uint16>(type_ss, "speed");
+            this->cooldown = get_config_value<uint16>(type_ss, "cooldown");
+            this->attack_range_begin = get_config_value<uint16>(type_ss, "attack_range_begin");
+            this->attack_range_end = get_config_value<uint16>(type_ss, "attack_range_end");
+            this->cost = get_config_value<uint16>(type_ss, "cost");
+            this->friend_texture = Texture{ Resource(U"resource/texture/" + type + U"/friend.png"), TextureDesc::Mipped };
+            this->friend_attack_texture = Texture{ Resource(U"resource/texture/" + type + U"/friend_attack.png"), TextureDesc::Mipped };
+            this->enemy_texture = Texture{ Resource(U"resource/texture/" + type + U"/enemy.png"), TextureDesc::Mipped };
+            this->enemy_attack_texture = Texture{ Resource(U"resource/texture/" + type + U"/enemy_attack.png"), TextureDesc::Mipped };
+            //攻撃の総合的な強さ
+            this->general_attack_power = get_config_value<double>(type_ss, "attack_power") / get_config_value<double>(type_ss, "cooldown") * (get_config_value<double>(type_ss, "attack_range_end") - get_config_value<double>(type_ss, "attack_range_begin"));
+            // レンダーテクスチャをクリア
+            friend_normal_mask_render_texture.clear(ColorF{ 0.0, 1.0 });
+            friend_attack_mask_render_texture.clear(ColorF{ 0.0, 1.0 });
+            enemy_normal_mask_render_texture.clear(ColorF{ 0.0, 1.0 });
+            enemy_attack_mask_render_texture.clear(ColorF{ 0.0, 1.0 });
+            {
+                // レンダーターゲットをnormal_mask_render_texture.clearに設定
+                const ScopedRenderTarget2D target{ friend_normal_mask_render_texture };
+                Texture{ Resource(U"resource/texture/" + type + U"/friend_silhouette.png"), TextureDesc::Mipped }.resized(texture_size).drawAt(friend_normal_mask_render_texture.size() / 2);
+            }
+            {
+                // レンダーターゲットをattack_mask_render_textureに設定
+                const ScopedRenderTarget2D target{ friend_attack_mask_render_texture };
+                Texture{ Resource(U"resource/texture/" + type + U"/friend_attack_silhouette.png"), TextureDesc::Mipped }.resized(texture_size).drawAt(friend_attack_mask_render_texture.size() / 2);
+            }
+            {
+                // レンダーターゲットをnormal_mask_render_texture.clearに設定
+                const ScopedRenderTarget2D target{ enemy_normal_mask_render_texture };
+                Texture{ Resource(U"resource/texture/" + type + U"/enemy_silhouette.png"), TextureDesc::Mipped }.resized(texture_size).drawAt(enemy_normal_mask_render_texture.size() / 2);
+            }
+            {
+                // レンダーターゲットをattack_mask_render_textureに設定
+                const ScopedRenderTarget2D target{ enemy_attack_mask_render_texture };
+                Texture{ Resource(U"resource/texture/" + type + U"/enemy_attack_silhouette.png"), TextureDesc::Mipped }.resized(texture_size).drawAt(enemy_attack_mask_render_texture.size() / 2);
+            }
+            
+        };
+    };
+    //ゲーム終了時のエフェクト
+    struct FinishEffect : IEffect
+    {
+        //ゲーム終了時のエフェクトのフォント
+        Font finish_font{120};
+        bool is_player_won;
+        
+        // このコンストラクタ引数が、Effect::add<FinishEffect>() の引数になる
+        explicit FinishEffect(const bool input)
+        : is_player_won{input}{}
+        
+        bool update(double t) override
+        {
+            //描画
+            finish_font(is_player_won ? U"You Win!!" : U"You Lose...").drawAt(Scene::Center(),is_player_won ? ColorF{0.9, 0.9, 0} :  ColorF{0, 0.1, 0.9});
+            // 3 秒未満なら継続
+            return (t < 3.0);
+        }
+    };
+    //game_unit_infoの連装配列
+    unordered_map<string, game_unit_info> game_unit_info_list = {};
+    //game_unitからgame_unit_infoを取得する関数
+    game_unit_info get_game_unit_info(game_unit& target){
+        return game_unit_info_list.at(target.type.narrow());
+    }
     // 蓄積された時間（秒）
     double action_accumulator = 0.0;
     double income_accumulator = 0.0;
@@ -237,52 +262,65 @@ void Main(){
     TextureRegion crack[3] = { Texture{ Resource(U"resource/texture/crack/crack-1.png"), TextureDesc::Mipped }.resized(texture_size),
         Texture{ Resource(U"resource/texture/crack/crack-2.png"), TextureDesc::Mipped }.resized(texture_size),
         Texture{ Resource(U"resource/texture/crack/crack-3.png"), TextureDesc::Mipped }.resized(texture_size) };
+    //攻撃音
+    const Audio hit_pop_1{Resource(U"resource/sound/hit_pop_1.ogg")};
     //エフェクト
     Effect effect;
     //勝敗を記録する変数
     uint8 winner = 0;
     //マスク用のシェーダー
-    const PixelShader mask_shader = HLSL{ Resource(U"resource/shader/hlsl/multi_texture_mask.hlsl"), U"PS" }
-    | GLSL{ Resource(U"resource/shader/glsl/multi_texture_mask.frag"), {{U"PSConstants2D", 0}} };
-    if (not mask_shader) {
-        throw Error{U"Error! Failed to load a shader file."};
-    }
+    PixelShader mask_shader;
     //難易度
     int difficult_level = 2;
     //召喚ボタンのリスト
     Array<summon_button> summon_button_list;
     //召喚ボタンのラベルのフォント
     Font sumbtn_label_font{(int32)(texture_size * 0.15)};
-    //プレイヤーと敵の状態設定（仮）
-    switch (difficult_level) {
-        case 1:
-            player.money = 2000;
-            enemy.money = 900;
-            break;
-        default:
-        case 2:
-            player.money = 1000;
-            enemy.money = 1000;
-            break;
-        case 3:
-            player.money = 900;
-            enemy.money = 2000;
+    
+    
+public:
+    // コンストラクタ（必ず実装）
+    GameScene(const InitData& init)
+    : IScene{ init }
+    {
+        
+        mask_shader = HLSL{ Resource(U"resource/shader/hlsl/multi_texture_mask.hlsl"), U"PS" }
+        | GLSL{ Resource(U"resource/shader/glsl/multi_texture_mask.frag"), {{U"PSConstants2D", 0}} };
+        if (not mask_shader) {
+            throw Error{U"Error! Failed to load a shader file."};
+        }
+        //プレイヤーと敵の状態設定（仮）
+        switch (difficult_level) {
+            case 1:
+                player.money = 2000;
+                enemy.money = 900;
+                break;
+            default:
+            case 2:
+                player.money = 1000;
+                enemy.money = 1000;
+                break;
+            case 3:
+                player.money = 900;
+                enemy.money = 2000;
+        }
+        //召喚ボタン・ユニットの情報の登録
+        game_unit_info_list.emplace("castle", game_unit_info(U"castle"));
+        game_unit_info_list.emplace("pencil_lead", game_unit_info(U"pencil_lead"));
+        for( int i=0; auto& el : config.at("all_types")) {
+            String type = Unicode::Widen(el.get<string>());
+            summon_button_list.push_back(summon_button(Unicode::Widen(el.get<string>()),i));
+            game_unit_info_list.emplace(el.get<string>(), game_unit_info(type));
+            i++;
+        };
+        //城を造る
+        game_unit_list.push_back(game_unit(U"castle",true));
+        game_unit_list.push_back(game_unit(U"castle",false));
     }
     
-    //召喚ボタン・ユニットの情報の登録
-    game_unit_info_list.emplace("castle", game_unit_info(U"castle"));
-    game_unit_info_list.emplace("pencil_lead", game_unit_info(U"pencil_lead"));
-    for( int i=0; auto& el : config.at("all_types")) {
-        String type = Unicode::Widen(el.get<string>());
-        summon_button_list.push_back(summon_button(Unicode::Widen(el.get<string>()),i));
-        game_unit_info_list.emplace(el.get<string>(), game_unit_info(type));
-        i++;
-    };
-    //城を造る
-    game_unit_list.push_back(game_unit(U"castle",true));
-    game_unit_list.push_back(game_unit(U"castle",false));
-    //毎フレームごとの処理
-    while (System::Update()) {
+    // 更新関数（オプション）
+    void update() override
+    {
         //蓄積された秒数の記録
         action_accumulator += Scene::DeltaTime();
         income_accumulator += Scene::DeltaTime();
@@ -392,41 +430,41 @@ void Main(){
                     for (unsigned long int j = 0; j < game_unit_list.size(); j++) {
                         //相手が敵で、攻撃範囲内にいるかを判別する
                         if (( game_unit_list[i].is_friend
-                            ? not game_unit_list[j].is_friend and game_unit_list[j].x >= game_unit_list[i].x + get_game_unit_info(game_unit_list[i]).attack_range_begin and game_unit_list[j].x <= game_unit_list[i].x + get_game_unit_info(game_unit_list[i]).attack_range_end
-                            : game_unit_list[j].is_friend and game_unit_list[j].x >= game_unit_list[i].x - get_game_unit_info(game_unit_list[i]).attack_range_end and game_unit_list[j].x <= game_unit_list[i].x - get_game_unit_info(game_unit_list[i]).attack_range_begin ) and game_unit_list[j].type.narrow() != "pencil_lead"){
-                                if (target == nullptr){
-                                    target = &game_unit_list[j];
-                                } else if ( game_unit_list[i].is_friend ? game_unit_list[j].x < target->x : game_unit_list[j].x > target->x ){
-                                    target = &game_unit_list[j];
-                                }
+                             ? not game_unit_list[j].is_friend and game_unit_list[j].x >= game_unit_list[i].x + get_game_unit_info(game_unit_list[i]).attack_range_begin and game_unit_list[j].x <= game_unit_list[i].x + get_game_unit_info(game_unit_list[i]).attack_range_end
+                             : game_unit_list[j].is_friend and game_unit_list[j].x >= game_unit_list[i].x - get_game_unit_info(game_unit_list[i]).attack_range_end and game_unit_list[j].x <= game_unit_list[i].x - get_game_unit_info(game_unit_list[i]).attack_range_begin ) and game_unit_list[j].type.narrow() != "pencil_lead"){
+                            if (target == nullptr){
+                                target = &game_unit_list[j];
+                            } else if ( game_unit_list[i].is_friend ? game_unit_list[j].x < target->x : game_unit_list[j].x > target->x ){
+                                target = &game_unit_list[j];
                             }
                         }
+                    }
                     //ターゲットが見つかったのなら
                     if (target != nullptr){
-                    //攻撃処理
-                    if (get_game_unit_info(game_unit_list[i]).feature == U"shot") {
-                        //シャー芯を召喚
-                        game_unit pencil_lead = *new game_unit(U"pencil_lead", game_unit_list[i].is_friend);
-                        pencil_lead.x = game_unit_list[i].x + texture_size / 2;
-                        game_unit_list.push_back(pencil_lead);
-                    } else {
-                        target->durability -= get_game_unit_info(game_unit_list[i]).attack_power;
-                        //攻撃時の、種類ごとのユニークな処理
-                        if (game_unit_list[i].type == U"eraser") {
-                            game_unit_list[i].durability -= 5;
-                        } else if (game_unit_list[i].type == U"pencil_lead"){
-                            game_unit_list[i].durability = 0;
-                            //ノックバック
-                            target->knock_back = 10;
+                        //攻撃処理
+                        if (get_game_unit_info(game_unit_list[i]).feature == U"shot") {
+                            //シャー芯を召喚
+                            game_unit pencil_lead = *new game_unit(U"pencil_lead", game_unit_list[i].is_friend);
+                            pencil_lead.x = game_unit_list[i].x + texture_size / 2;
+                            game_unit_list.push_back(pencil_lead);
                         } else {
-                            //ノックバック
-                            target->knock_back = 1;
+                            target->durability -= get_game_unit_info(game_unit_list[i]).attack_power;
+                            //攻撃時の、種類ごとのユニークな処理
+                            if (game_unit_list[i].type == U"eraser") {
+                                game_unit_list[i].durability -= 5;
+                            } else if (game_unit_list[i].type == U"pencil_lead"){
+                                game_unit_list[i].durability = 0;
+                                //ノックバック
+                                target->knock_back = 10;
+                            } else {
+                                //ノックバック
+                                target->knock_back = 1;
+                            }
                         }
-                    }
-                    //クールダウン
-                    game_unit_list[i].cooldown = get_game_unit_info(game_unit_list[i]).cooldown;
-                    //攻撃したフラグを立てる
-                    has_attacked = true;
+                        //クールダウン
+                        game_unit_list[i].cooldown = get_game_unit_info(game_unit_list[i]).cooldown;
+                        //攻撃したフラグを立てる
+                        has_attacked = true;
                     }
                     //攻撃したかの判定
                     if (not has_attacked) {
@@ -512,6 +550,40 @@ void Main(){
             income_accumulator -= 1.0;
             
         }
-      effect.update();
+        effect.update();
+    }
+    
+    // 描画関数（オプション）
+    void draw() const override
+    {
+        
+        
+        
+        
+    }
+};
+
+
+
+void Main(){
+    //ウィンドウサイズの設定
+    Window::Resize(1067,600);
+    Scene::SetResizeMode(ResizeMode::Keep);
+    Window::SetStyle(WindowStyle::Sizable);
+    //背景を白くする
+    Scene::SetBackground(Palette::White);
+    //一旦描画
+    System::Update();
+    config = open_json_file(Resource(U"resource/config.json"));
+    // シーンマネージャーを作成
+    App manager;
+    // シーンの登録
+    manager.add<Title>(U"Title");
+    manager.add<GameScene>(U"GameScene");
+    //毎フレームごとの処理
+    while (System::Update()) {
+        if (not manager.update()){
+            break;
+        }
     }
 }
