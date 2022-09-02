@@ -292,6 +292,7 @@
     <None Include="App\example\toml\config.toml" />
     <None Include="App\example\toml\test.toml" />
     <None Include="App\example\zip\zip_test.zip" />
+    <None Include="App\resource\config.json" />
   </ItemGroup>
   <ItemGroup>
     <Media Include="App\example\shot.mp3" />
@@ -312,7 +313,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\json.hpp" />
-    <ClInclude Include="src\Main.hpp" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
@@ -400,4 +400,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties App_4resource_4config_1json__JsonSchema="" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

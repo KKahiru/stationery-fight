@@ -723,6 +723,9 @@
     <None Include="App\example\toml\test.toml">
       <Filter>Resource Files\example\toml</Filter>
     </None>
+    <None Include="App\resource\config.json">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Media Include="App\example\test.mp3">
@@ -765,9 +768,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Main.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\json.hpp">
