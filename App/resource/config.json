@@ -29,7 +29,7 @@
             "durability": 175,
             "attack_power": 80,
             "cooldown": 25,
-            "speed": 3,
+            "speed": 4,
             "attack_range_begin": 0,
             "attack_range_end": 250,
             "cost": 250
@@ -80,13 +80,13 @@
         },
         "castle": {
             "ja_name": "城",
-            "feature": "shot",
-            "durability": 850,
-            "attack_power": 80,
+            "feature": "normal",
+            "durability": 1200,
+            "attack_power": 50,
             "cooldown": 25,
             "speed": 0,
             "attack_range_begin": 0,
-            "attack_range_end": 300,
+            "attack_range_end": 120,
             "cost": 65535
         }
     }

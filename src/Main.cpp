@@ -40,31 +40,42 @@ using App = SceneManager<String>;
 // タイトルシーン
 class Title : public App::Scene
 {
-    Font title_font{80, Typeface::Bold};
-public:
-    // コンストラクタ（必ず実装）
-    Title(const InitData& init)
-    : IScene{ init }
-    {
-        
-    }
-    
-    // 更新関数（オプション）
-    void update() override
-    {
-        if (SimpleGUI::ButtonAt(U"プレイ！", Vec2{Scene::Center().x, Scene::Center().y}) ) {
-            changeScene(U"GameScene");
+    Font title_font{90, Typeface::Bold};
+    Font button_font{35};
+    Point play_button_vec{Scene::Center().x, Scene::Center().y - 10};
+    Rect play_button{Arg::center(play_button_vec), 320, 60};
+    Point rule_button_vec{Scene::Center().x, Scene::Center().y + 90};
+    Rect rule_button{Arg::center(rule_button_vec), 320, 60};
+
+    public:
+        // コンストラクタ（必ず実装）
+        Title(const InitData& init)
+        : IScene{ init }
+        {
+            //背景を白くする
+            Scene::SetBackground(Palette::Skyblue);
         }
-    }
-    
-    // 描画関数（オプション）
-    void draw() const override
-    {
         
-        title_font(U"Stationery Fight!").drawAt(Scene::Center().x, Scene::Center().y - 180, Palette::Dodgerblue);
+        // 更新関数（オプション）
+        void update() override
+        {
+            if (play_button.leftClicked()) {
+                changeScene(U"GameScene");
+            }
+        }
         
-        
-    }
+        // 描画関数（オプション）
+        void draw() const override
+        {
+            
+            title_font(U"Stationery Fight!").drawAt(Scene::Center().x, Scene::Center().y - 190, Palette::Dodgerblue);
+            //プレイボタン
+            play_button.draw(play_button.mouseOver() ? Palette::Cadetblue : Palette::Azure).drawFrame(1, Palette::Black);
+            button_font(U"プレイ！").drawAt(play_button_vec,Palette::Black);
+            //ルールボタン
+            rule_button.draw(rule_button.mouseOver() ? Palette::Cadetblue : Palette::Azure).drawFrame(1, Palette::Black);
+            button_font(U"遊び方・ルール").drawAt(rule_button_vec,Palette::Black);
+        }
 };
 
 // タイトルシーン
@@ -91,20 +102,28 @@ class GameScene : public App::Scene
         game_unit(String type, bool is_friend){
             string type_ss = type.narrow();
             if (is_friend){
-                this->x = 40;
+                this->x = 50;
             } else{
-                this->x = Scene::Size().x - 40;
+                this->x = Scene::Size().x - 50;
             }
             this->type = type;
             this->is_friend = is_friend;
             this->durability = get_config_value<uint16>(type_ss, "durability");
         };
+        game_unit(String type, bool is_friend, uint16 x){
+            string type_ss = type.narrow();
+            this->x = x;
+            this->type = type;
+            this->is_friend = is_friend;
+            this->durability = get_config_value<uint16>(type_ss, "durability");
+        }
         //当たり判定
         Rect collision_detection{120,120};
     };
     //プレイヤーの情報を格納する構造体
     struct player_info{
-        uint16 money;
+        uint16 money = 0;
+        uint16 money_level = 0;
         uint16 game_unit_power;
     };
     //プレイヤーと敵の情報生成
@@ -270,39 +289,35 @@ class GameScene : public App::Scene
     uint8 winner = 0;
     //マスク用のシェーダー
     PixelShader mask_shader;
-    //難易度
-    int difficult_level = 2;
     //召喚ボタンのリスト
     Array<summon_button> summon_button_list;
     //召喚ボタンのラベルのフォント
     Font sumbtn_label_font{(int32)(texture_size * 0.15)};
-    
-    
+    //資金力増加ボタンの背景
+    Rect money_button{Scene::Size().x - texture_size, Scene::Size().y - texture_size, texture_size, texture_size};
+    //資金力増加ボタンのラベルのフォント
+    Font money_label_font{18};
+    //難易度
+    int difficult_level = 2;
+    //勝敗決定後の待機時間
+    float waiting_time = 0;
+    //敵AIの変数
+    //敵AIの攻撃のモード
+    uint8 AIMode = 0;
+    //敵AIの進行度
+    uint16 AILevel = 0;
+    //敵AIが召喚するターゲット
+    String AITarget = U"";
 public:
     // コンストラクタ（必ず実装）
     GameScene(const InitData& init)
     : IScene{ init }
     {
-        
+        Scene::SetBackground(Palette::Lightskyblue);
         mask_shader = HLSL{ Resource(U"resource/shader/hlsl/multi_texture_mask.hlsl"), U"PS" }
         | GLSL{ Resource(U"resource/shader/glsl/multi_texture_mask.frag"), {{U"PSConstants2D", 0}} };
         if (not mask_shader) {
             throw Error{U"Error! Failed to load a shader file."};
-        }
-        //プレイヤーと敵の状態設定（仮）
-        switch (difficult_level) {
-            case 1:
-                player.money = 2000;
-                enemy.money = 900;
-                break;
-            default:
-            case 2:
-                player.money = 1000;
-                enemy.money = 1000;
-                break;
-            case 3:
-                player.money = 900;
-                enemy.money = 2000;
         }
         //召喚ボタン・ユニットの情報の登録
         game_unit_info_list.emplace("castle", game_unit_info(U"castle"));
@@ -314,8 +329,8 @@ public:
             i++;
         };
         //城を造る
-        game_unit_list.push_back(game_unit(U"castle",true));
-        game_unit_list.push_back(game_unit(U"castle",false));
+        game_unit_list.push_back(game_unit(U"castle", true, 40));
+        game_unit_list.push_back(game_unit(U"castle", false, Scene::Width() - 40));
     }
     
     // 更新関数（オプション）
@@ -389,17 +404,29 @@ public:
             game_unit_list[i].collision_detection.setPos(Arg::center(game_unit_list[i].x, Scene::Center().y - overlapped_unit_count * texture_size / 8));
         }
         //敵を召喚する簡易ボタン
-        if (SimpleGUI::Button(U"敵鉛筆召喚", Vec2{ 0, 100 }))
-        {
-            summon_game_unit(U"pencil",false);
+#if DEBUG
+        if (not KeyShift.pressed()) {
+                if (SimpleGUI::Button(U"敵鉛筆召喚", Vec2{ 0, 100 }))
+            {
+                summon_game_unit(U"pencil",false);
+            }
+            if (SimpleGUI::Button(U"敵消しゴム召喚", Vec2{ 150, 100 }))
+            {
+                summon_game_unit(U"eraser",false);
+            }
+            if (SimpleGUI::Button(U"敵三角定規召喚", Vec2{ 350, 100 }))
+            {
+                summon_game_unit(U"triangle",false);
+            }
         }
-        if (SimpleGUI::Button(U"敵消しゴム召喚", Vec2{ 150, 100 }))
+#endif
+        //背景の描画
         {
-            summon_game_unit(U"eraser",false);
-        }
-        if (SimpleGUI::Button(U"敵三角定規召喚", Vec2{ 350, 100 }))
-        {
-            summon_game_unit(U"triangle",false);
+            const uint16 line = Scene::Center().y + texture_size/2 + 5;
+            //土！！！！
+            Rect{ 0, line, Scene::Width(), Scene::Height() - line }.draw(Color{ 175, 108, 53 });
+            //草！！！！
+            Rect{ 0, line, Scene::Width(), 25 }.draw(Palette::Forestgreen);
         }
         //召喚ボタンの描画
         for (unsigned long int i = 0; i < summon_button_list.size(); i++){
@@ -414,6 +441,42 @@ public:
                 //game_unitを召喚する
                 summon_game_unit(summon_button_list[i].type, true);
             }
+        }
+        //資金力増加ボタン
+        money_button.draw(120 * Math::Pow(2, player.money_level) > player.money ? Palette::Darkgoldenrod : money_button.mouseOver() ? Palette::Goldenrod : Palette::Gold).drawFrame(3, 0, Palette::Peru);
+        money_label_font( U"資金力増加\n" + Format(120 * Math::Pow(2, player.money_level)) ).drawAt(Scene::Width() - texture_size / 2, Scene::Height() - texture_size * 0.5);
+        if (money_button.leftClicked() and player.money >= 120 * Math::Pow(2, player.money_level)) {
+            player.money -=  120 * Math::Pow(2, player.money_level);
+            player.money_level ++;
+        }
+        //耐久力バーの描画
+        if (winner == 0) {
+            // hard coding
+            float friend_castle_damage_proportion = (float)game_unit_list[0].durability / 1200;
+            float enemy_castle_damage_proportion = (float)game_unit_list[1].durability / 1200;
+            Color friend_castle_bar_color = Palette::Red;
+            Color enemy_castle_bar_color = Palette::Red;
+            
+            if (friend_castle_damage_proportion > 0.6 ){
+                friend_castle_bar_color = Palette::Greenyellow;
+            } else if (friend_castle_damage_proportion > 0.3) {
+                friend_castle_bar_color = Palette::Yellow;
+            } else {
+                friend_castle_bar_color = Palette::Red;
+            }
+            
+            if (enemy_castle_damage_proportion > 0.6 ){
+                enemy_castle_bar_color = Palette::Greenyellow;
+            } else if (friend_castle_damage_proportion > 0.3) {
+                enemy_castle_bar_color = Palette::Yellow;
+            } else {
+                enemy_castle_bar_color = Palette::Red;
+            }
+
+            Line{10, Scene::Center().y - 100, 110, Scene::Center().y - 100}.draw(10, Palette::Darkgray);
+            Line{10, Scene::Center().y - 100, 10 + 100 * friend_castle_damage_proportion, Scene::Center().y - 100}.draw(10, friend_castle_bar_color);
+            Line{Scene::Width() - 110, Scene::Center().y - 100, Scene::Width() - 10, Scene::Center().y - 100}.draw(10, Palette::Darkgray);
+            Line{Scene::Width() - 10 - 100 * enemy_castle_damage_proportion, Scene::Center().y - 100, Scene::Width() - 10, Scene::Center().y - 100}.draw(10, Palette::Greenyellow);
         }
         //game_unitの行動処理（0.1秒刻み）
         while ( 0.1 <= action_accumulator) {
@@ -444,9 +507,7 @@ public:
                         //攻撃処理
                         if (get_game_unit_info(game_unit_list[i]).feature == U"shot") {
                             //シャー芯を召喚
-                            game_unit pencil_lead = *new game_unit(U"pencil_lead", game_unit_list[i].is_friend);
-                            pencil_lead.x = game_unit_list[i].x + texture_size / 2;
-                            game_unit_list.push_back(pencil_lead);
+                            game_unit_list.push_back(game_unit(U"pencil_lead", game_unit_list[i].is_friend, game_unit_list[i].x + texture_size / 2));
                         } else {
                             target->durability -= get_game_unit_info(game_unit_list[i]).attack_power;
                             //攻撃時の、種類ごとのユニークな処理
@@ -491,8 +552,9 @@ public:
                     } else {
                         //ノックバックのカウントを減らし、後ろに弾き飛ばす
                         game_unit_list[i].knock_back --;
+                        uint16 x_after_knockback = game_unit_list[i].x + (game_unit_list[i].is_friend ? -1 : 1);
                         if (game_unit_list[i].type.narrow() != "castle") {
-                            game_unit_list[i].x += (game_unit_list[i].is_friend ? -1 : 1);
+                            game_unit_list[i].x = x_after_knockback;
                         }
                     }
                 }
@@ -512,7 +574,7 @@ public:
             }
             //AI
             if (winner == 0){
-                double friend_power = 0, enemy_power = 0;
+                /*double friend_power = 0, enemy_power = 0;
                 for (unsigned long int i = 0; i < game_unit_list.size(); i++){
                     if (game_unit_list[i].type.narrow() != "castle" and game_unit_list[i].type.narrow() != "pencil_lead"){
                         //強さは攻撃の強さと耐久力の合計
@@ -523,32 +585,82 @@ public:
                 Print << U"power" + Format(friend_power) + U"/" + Format(enemy_power);
                 if (friend_power > enemy_power) {
                     summon_game_unit(U"pencil", false);
+                }*/
+                if (AILevel == 3) {
+                    if (120 * Math::Pow(2, enemy.money_level) <= enemy.money) {
+                        enemy.money -= 120 * Math::Pow(2, enemy.money_level);
+                        enemy.money_level ++;
+                        AILevel = 0;
+                        AIMode = 0;
+                    }
+                } else {
+                    if (AIMode == 0){
+                        AIMode = round(Random()) + 1;
+                        Logger << AIMode;
+                    }
+                    //召喚するgame_unitの決定
+                    if (AITarget == U"") {
+                        switch (enemy.money) {
+                            case 0:
+                                AITarget = U"pencil";
+                                break;
+                            case 1:
+                                AITarget = U"triangle";
+                                break;
+                            default:
+                            case 2:
+                                if (AIMode == 1) {
+                                    //遠距離の召喚
+                                    AITarget = (AILevel == 0) ? U"mechanical_pencil" : U"triangle";
+                                } else {
+                                    AITarget = U"triangle";
+                                }
+                                break;
+                        }
+                    }
+
+                    //召喚できたか
+                    if (summon_game_unit(AITarget, false)) {
+                        AILevel ++;
+                        AITarget = U"";
+                    }
+                    
                 }
-                Print << U"money: " + Format(player.money) + U" / " + Format(enemy.money);
+#if DEBUG
+                if (not KeyShift.pressed()) {
+                    Print << U"Mode: " << AIMode;
+                    Print << U"Target: " << (AITarget == U"" ? U"資金力増加" : AITarget);
+                    Print << U"money: " + Format(player.money) + U" / " + Format(enemy.money);
+                }
+#endif
             }
             //蓄積された秒数を減らす
             action_accumulator -= 0.1;
         }
         //各陣営の収入処理
-        while (1.0 <= income_accumulator) {
+        while (0.5 <= income_accumulator) {
             //難易度に合わせて資金を増加させる
             switch (difficult_level) {
                 case 1:
-                    player.money += 30;
-                    enemy.money += 10;
+                    player.money += 10 * Math::Pow(1.5, player.money_level);
+                    enemy.money += 5 * Math::Pow(1.5, enemy.money_level);
                     break;
                 default:
                 case 2:
-                    player.money += 20;
-                    enemy.money += 20;
+                    player.money += 10 * Math::Pow(1.5, player.money_level);
+                    enemy.money += 10 * Math::Pow(1.5, enemy.money_level);
                     break;
                 case 3:
-                    player.money += 10;
-                    enemy.money += 30;
+                    player.money += 5 * Math::Pow(1.5, player.money_level);
+                    enemy.money += 10 * Math::Pow(1.5, enemy.money_level);
                     break;
             }
-            income_accumulator -= 1.0;
+            income_accumulator -= 0.5;
             
+        }
+        waiting_time += winner != 0 ? Scene::DeltaTime() : 0;
+        if (waiting_time >= 4) {
+            changeScene(U"Title");
         }
         effect.update();
     }
@@ -566,20 +678,16 @@ public:
 
 
 void Main(){
-    //ウィンドウサイズの設定
-    Window::Resize(1067,600);
-    Scene::SetResizeMode(ResizeMode::Keep);
-    Window::SetStyle(WindowStyle::Sizable);
-    //背景を白くする
-    Scene::SetBackground(Palette::White);
-    //一旦描画
-    System::Update();
     config = open_json_file(Resource(U"resource/config.json"));
     // シーンマネージャーを作成
     App manager;
     // シーンの登録
     manager.add<Title>(U"Title");
     manager.add<GameScene>(U"GameScene");
+    //ウィンドウサイズの設定
+    Window::Resize(960,540);
+    Scene::SetResizeMode(ResizeMode::Keep);
+    Window::SetStyle(WindowStyle::Sizable);
     //毎フレームごとの処理
     while (System::Update()) {
         if (not manager.update()){
