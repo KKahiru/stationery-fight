@@ -123,16 +123,49 @@ Resource(engine/soundfont/GMGSx.sf2.zstdcmp)
 //  Textures
 //
 
-// eraser
-Resource(resource/texture/eraser_friend.png)
-Resource(resource/texture/eraser_friend_attack.png)
-Resource(resource/texture/eraser_enemy.png)
-Resource(resource/texture/eraser_enemy_attack.png)
 // pencil
-Resource(resource/texture/pencil_friend.png)
-Resource(resource/texture/pencil_friend_attack.png)
-Resource(resource/texture/pencil_enemy.png)
-Resource(resource/texture/pencil_enemy_attack.png)
+Resource(resource/texture/pencil/friend.png)
+Resource(resource/texture/pencil/friend_attack.png)
+Resource(resource/texture/pencil/enemy.png)
+Resource(resource/texture/pencil/enemy_attack.png)
+Resource(resource/texture/pencil/friend_silhouette.png)
+Resource(resource/texture/pencil/friend_attack_silhouette.png)
+Resource(resource/texture/pencil/enemy_silhouette.png)
+Resource(resource/texture/pencil/enemy_attack_silhouette.png)
+//mp
+Resource(resource/texture/mechanical_pencil/friend.png)
+Resource(resource/texture/mechanical_pencil/friend_attack.png)
+Resource(resource/texture/mechanical_pencil/enemy.png)
+Resource(resource/texture/mechanical_pencil/enemy_attack.png)
+Resource(resource/texture/mechanical_pencil/friend_silhouette.png)
+Resource(resource/texture/mechanical_pencil/friend_attack_silhouette.png)
+Resource(resource/texture/mechanical_pencil/enemy_silhouette.png)
+Resource(resource/texture/mechanical_pencil/enemy_attack_silhouette.png)
+//triangle
+Resource(resource/texture/triangle/friend.png)
+Resource(resource/texture/triangle/friend_attack.png)
+Resource(resource/texture/triangle/enemy.png)
+Resource(resource/texture/triangle/enemy_attack.png)
+Resource(resource/texture/triangle/friend_silhouette.png)
+Resource(resource/texture/triangle/friend_attack_silhouette.png)
+Resource(resource/texture/triangle/enemy_silhouette.png)
+Resource(resource/texture/triangle/enemy_attack_silhouette.png)
+//eraser
+Resource(resource/texture/eraser/friend.png)
+Resource(resource/texture/eraser/friend_attack.png)
+Resource(resource/texture/eraser/enemy.png)
+Resource(resource/texture/eraser/enemy_attack.png)
+//castle
+Resource(resource/texture/castle/friend.png)
+Resource(resource/texture/castle/friend_attack.png)
+Resource(resource/texture/castle/enemy.png)
+Resource(resource/texture/castle/enemy_attack.png)
+//pencil_lead
+Resource(resource/texture/pencil_lead/friend.png)
+Resource(resource/texture/pencil_lead/enemy.png)
+
+Resource(resource/config.json)
+Resource(resource/shader/hlsl/multi_texture_mask.hlsl)
 
 //
 // Sounds

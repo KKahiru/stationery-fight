@@ -2,7 +2,7 @@
     "all_types":["pencil","eraser","triangle","mechanical_pencil"],
     "ability_config":{
         "pencil": {
-            "ja_name": "鉛筆",
+            "ja_name": "a",
             "feature": "normal",
             "durability": 100,
             "attack_power": 20,
@@ -13,7 +13,7 @@
             "cost": 100
         },
         "eraser": {
-            "ja_name": "消しゴム",
+            "ja_name": "kesigomu",
             "feature": "eraser",
             "durability": 50,
             "attack_power": 40,
@@ -24,7 +24,7 @@
             "cost": 70
         },
         "triangle": {
-            "ja_name": "三角定規",
+            "ja_name": "sannkaku-jougi",
             "feature": "long_lange",
             "durability": 175,
             "attack_power": 80,
@@ -34,19 +34,8 @@
             "attack_range_end": 250,
             "cost": 250
         },
-        "ink_eraser": {
-            "ja_name": "砂消しゴム",
-            "feature": "eraser",
-            "durability": 100,
-            "attack_power": 120,
-            "cooldown": 10,
-            "speed": 10,
-            "attack_range_begin": 0,
-            "attack_range_end": 60,
-            "cost": 100
-        },
         "mechanical_pencil": {
-            "ja_name": "シャーペン",
+            "ja_name": "sharp-pencil",
             "feature": "shot",
             "durability": 175,
             "attack_power": 100,
@@ -57,7 +46,7 @@
             "cost": 600
         },
         "pencil_lead": {
-            "ja_name": "シャー芯",
+            "ja_name": "null",
             "feature": "arrow",
             "durability": 9999,
             "attack_power": 100,
@@ -67,19 +56,8 @@
             "attack_range_end": 60,
             "cost": 65535
         },
-        "battery": {
-            "ja_name": "バッテリー",
-            "feature": "battery",
-            "durability": 1,
-            "attack_power": 80,
-            "cooldown": 5,
-            "speed": 2,
-            "attack_range_begin": 0,
-            "attack_range_end": 110,
-            "cost": 700
-        },
         "castle": {
-            "ja_name": "城",
+            "ja_name": "Castle",
             "feature": "shot",
             "durability": 850,
             "attack_power": 80,
