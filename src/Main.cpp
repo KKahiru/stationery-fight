@@ -297,6 +297,8 @@ class GameScene : public App::Scene
     Rect money_button{Scene::Size().x - texture_size, Scene::Size().y - texture_size, texture_size, texture_size};
     //資金力増加ボタンのラベルのフォント
     Font money_label_font{18};
+    //資金情報
+    Font money_info_label_font{22};
     //難易度
     int difficult_level = 2;
     //勝敗決定後の待機時間
@@ -305,9 +307,18 @@ class GameScene : public App::Scene
     //敵AIの攻撃のモード
     uint8 AIMode = 0;
     //敵AIの進行度
-    uint16 AILevel = 0;
+    uint16 AIStep = 0;
     //敵AIが召喚するターゲット
     String AITarget = U"";
+    //AIの貯金
+    uint16 AISavingMoney = 0;
+    void AISaveMoney(){
+        if (AISavingMoney < (AIStep + 1) * 25 * Math::Pow(2, enemy.money_level) ) {
+            AISavingMoney += enemy.money;
+            enemy.money = 0;
+        }
+        return;
+    }
 public:
     // コンストラクタ（必ず実装）
     GameScene(const InitData& init)
@@ -449,14 +460,14 @@ public:
             player.money -=  120 * Math::Pow(2, player.money_level);
             player.money_level ++;
         }
+        money_info_label_font(U"資金残高: " + Format(player.money)).draw(0, Scene::Height() - texture_size - 40);
         //耐久力バーの描画
         if (winner == 0) {
             // hard coding
             float friend_castle_damage_proportion = (float)game_unit_list[0].durability / 1200;
             float enemy_castle_damage_proportion = (float)game_unit_list[1].durability / 1200;
-            Color friend_castle_bar_color = Palette::Red;
-            Color enemy_castle_bar_color = Palette::Red;
-            
+            Color friend_castle_bar_color;
+            Color enemy_castle_bar_color;
             if (friend_castle_damage_proportion > 0.6 ){
                 friend_castle_bar_color = Palette::Greenyellow;
             } else if (friend_castle_damage_proportion > 0.3) {
@@ -467,7 +478,7 @@ public:
             
             if (enemy_castle_damage_proportion > 0.6 ){
                 enemy_castle_bar_color = Palette::Greenyellow;
-            } else if (friend_castle_damage_proportion > 0.3) {
+            } else if (enemy_castle_damage_proportion > 0.3) {
                 enemy_castle_bar_color = Palette::Yellow;
             } else {
                 enemy_castle_bar_color = Palette::Red;
@@ -476,7 +487,7 @@ public:
             Line{10, Scene::Center().y - 100, 110, Scene::Center().y - 100}.draw(10, Palette::Darkgray);
             Line{10, Scene::Center().y - 100, 10 + 100 * friend_castle_damage_proportion, Scene::Center().y - 100}.draw(10, friend_castle_bar_color);
             Line{Scene::Width() - 110, Scene::Center().y - 100, Scene::Width() - 10, Scene::Center().y - 100}.draw(10, Palette::Darkgray);
-            Line{Scene::Width() - 10 - 100 * enemy_castle_damage_proportion, Scene::Center().y - 100, Scene::Width() - 10, Scene::Center().y - 100}.draw(10, Palette::Greenyellow);
+            Line{Scene::Width() - 10 - 100 * enemy_castle_damage_proportion, Scene::Center().y - 100, Scene::Width() - 10, Scene::Center().y - 100}.draw(10, enemy_castle_bar_color);
         }
         //game_unitの行動処理（0.1秒刻み）
         while ( 0.1 <= action_accumulator) {
@@ -485,7 +496,7 @@ public:
             //game_unitの行動処理
             for (unsigned long int i = 0; i < game_unit_list.size(); i++) {
                 //クールダウンが終わったかの判定
-                if (game_unit_list[i].cooldown == 0 and game_unit_list[i].knock_back == 0){
+                if (game_unit_list[i].cooldown == 0 and (game_unit_list[i].knock_back == 0 or (game_unit_list[i].type.narrow() == "castle" or game_unit_list[i].type.narrow() == "pencil_sharpener" ))){
                     //攻撃したかのフラグ
                     bool has_attacked = false;
                     game_unit* target = nullptr;
@@ -553,7 +564,7 @@ public:
                         //ノックバックのカウントを減らし、後ろに弾き飛ばす
                         game_unit_list[i].knock_back --;
                         uint16 x_after_knockback = game_unit_list[i].x + (game_unit_list[i].is_friend ? -1 : 1);
-                        if (game_unit_list[i].type.narrow() != "castle") {
+                        if (game_unit_list[i].type.narrow() != "castle" and game_unit_list[i].type.narrow() != "pencil_sharpener") {
                             game_unit_list[i].x = x_after_knockback;
                         }
                     }
@@ -574,62 +585,113 @@ public:
             }
             //AI
             if (winner == 0){
-                /*double friend_power = 0, enemy_power = 0;
+                //勢力の計算
+                double friend_power = 0, enemy_power = 0;
                 for (unsigned long int i = 0; i < game_unit_list.size(); i++){
                     if (game_unit_list[i].type.narrow() != "castle" and game_unit_list[i].type.narrow() != "pencil_lead"){
                         //強さは攻撃の強さと耐久力の合計
                         (game_unit_list[i].is_friend ? friend_power : enemy_power) += (get_game_unit_info(game_unit_list[i]).general_attack_power + game_unit_list[i].durability);
                     }
                 }
-                
-                Print << U"power" + Format(friend_power) + U"/" + Format(enemy_power);
-                if (friend_power > enemy_power) {
-                    summon_game_unit(U"pencil", false);
-                }*/
-                if (AILevel == 3) {
-                    if (120 * Math::Pow(2, enemy.money_level) <= enemy.money) {
-                        enemy.money -= 120 * Math::Pow(2, enemy.money_level);
-                        enemy.money_level ++;
-                        AILevel = 0;
-                        AIMode = 0;
-                    }
+                float PowerRatio;
+                //0除算の防止
+                if (friend_power == 0) {
+                    PowerRatio = enemy_power == 0 ? 1 : 2;
                 } else {
-                    if (AIMode == 0){
-                        AIMode = round(Random()) + 1;
-                        Logger << AIMode;
-                    }
-                    //召喚するgame_unitの決定
-                    if (AITarget == U"") {
-                        switch (enemy.money) {
+                    PowerRatio = enemy_power / friend_power;
+                }
+                //下準備
+                if (AIMode == 0){
+                    AIMode = round(Random()) + 1;
+                    Logger << AIMode;
+                }
+                //召喚するgame_unitの決定
+                if (AIStep != 3) {
+                    //勢力の割合に応じた分岐
+                    if (PowerRatio < 0.5) {
+                        switch (enemy.money_level) {
                             case 0:
-                                AITarget = U"pencil";
-                                break;
                             case 1:
+                                AITarget = U"eraser";
+                                break;
+                            case 2:
+                            case 3:
                                 AITarget = U"triangle";
                                 break;
+                            case 4:
                             default:
+                                if (AIStep == 0){
+                                    AITarget = U"pencil_sharpener";
+                                } else {
+                                    AITarget = U"mechanical_pencil";
+                                }
+                                break;
+                        }
+                    } else if (PowerRatio < 1.25){
+                        switch (enemy.money_level) {
+                            case 0:
+                            case 1:
+                                AISaveMoney();
+                                AITarget = U"pencil";
+                                break;
                             case 2:
+                            case 3:
+                                AISaveMoney();
+                                AITarget = U"triangle";
+                                break;
+                            case 4:
+                            default:
+                                AISaveMoney();
                                 if (AIMode == 1) {
                                     //遠距離の召喚
-                                    AITarget = (AILevel == 0) ? U"mechanical_pencil" : U"triangle";
+                                    AITarget = (AIStep == 0) ? U"mechanical_pencil" : U"triangle";
                                 } else {
                                     AITarget = U"triangle";
                                 }
                                 break;
+                            }
+                } else {
+                        //地獄プロセス
+                        switch (enemy.money_level) {
+                            case 0:
+                            case 1:
+                                AISaveMoney();
+                                break;
+                            case 2:
+                            case 3:
+                                AISaveMoney();
+                                AITarget=U"triangle";
+                                break;
+                            case 4:
+                            default:
+                                AISaveMoney();
+                                if (AIStep == 0){
+                                    AITarget=U"pencil_sharpener";
+                                } else {
+                                    AITarget=U"mechanical_pencil";
+                                }
+                                break;
                         }
                     }
-
-                    //召喚できたか
-                    if (summon_game_unit(AITarget, false)) {
-                        AILevel ++;
-                        AITarget = U"";
+                }
+                if (AIStep == 3) {
+                    enemy.money += AISavingMoney;
+                    AISavingMoney = 0;
+                    if (120 * Math::Pow(2, enemy.money_level) <= enemy.money) {
+                        enemy.money -= 120 * Math::Pow(2, enemy.money_level);
+                        enemy.money_level ++;
+                        AIStep = 0;
+                        AIMode = 0;
                     }
-                    
+                } else /*召喚を試みる*/if (AITarget.narrow() != "" and summon_game_unit(AITarget, false)) {
+                    AIStep ++;
+                    AITarget = U"";
                 }
 #if DEBUG
                 if (not KeyShift.pressed()) {
                     Print << U"Mode: " << AIMode;
                     Print << U"Target: " << (AITarget == U"" ? U"資金力増加" : AITarget);
+                    Print << U"power" + Format(friend_power) + U"/" + Format(enemy_power);
                     Print << U"money: " + Format(player.money) + U" / " + Format(enemy.money);
                 }
 #endif
@@ -643,16 +705,16 @@ public:
             switch (difficult_level) {
                 case 1:
                     player.money += 10 * Math::Pow(1.5, player.money_level);
-                    enemy.money += 5 * Math::Pow(1.5, enemy.money_level);
+                    enemy.money += 7 * Math::Pow(1.5, enemy.money_level);
                     break;
                 default:
                 case 2:
                     player.money += 10 * Math::Pow(1.5, player.money_level);
-                    enemy.money += 10 * Math::Pow(1.5, enemy.money_level);
+                    enemy.money += 12 * Math::Pow(1.5, enemy.money_level);
                     break;
                 case 3:
-                    player.money += 5 * Math::Pow(1.5, player.money_level);
-                    enemy.money += 10 * Math::Pow(1.5, enemy.money_level);
+                    player.money += 7 * Math::Pow(1.5, player.money_level);
+                    enemy.money += 12 * Math::Pow(1.5, enemy.money_level);
                     break;
             }
             income_accumulator -= 0.5;

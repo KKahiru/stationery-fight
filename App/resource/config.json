@@ -1,8 +1,8 @@
 {
-    "all_types":["pencil","eraser","triangle","mechanical_pencil"],
+    "all_types":["pencil","eraser","triangle","mechanical_pencil","pencil_sharpener","compass"],
     "ability_config":{
         "pencil": {
-            "ja_name": "鉛筆",
+            "ja_name": "\u925b\u7b46",
             "feature": "normal",
             "durability": 100,
             "attack_power": 20,
@@ -13,7 +13,7 @@
             "cost": 100
         },
         "eraser": {
-            "ja_name": "消しゴム",
+            "ja_name": "\u6d88\u3057\u30b4\u30e0",
             "feature": "eraser",
             "durability": 50,
             "attack_power": 40,
@@ -24,32 +24,21 @@
             "cost": 70
         },
         "triangle": {
-            "ja_name": "三角定規",
-            "feature": "long_lange",
+            "ja_name": "\u4e09\u89d2\u5b9a\u898f",
+            "feature": "long_range",
             "durability": 175,
-            "attack_power": 80,
+            "attack_power": 60,
             "cooldown": 25,
             "speed": 4,
             "attack_range_begin": 0,
             "attack_range_end": 250,
-            "cost": 250
-        },
-        "ink_eraser": {
-            "ja_name": "砂消しゴム",
-            "feature": "eraser",
-            "durability": 100,
-            "attack_power": 120,
-            "cooldown": 10,
-            "speed": 10,
-            "attack_range_begin": 0,
-            "attack_range_end": 60,
-            "cost": 100
+            "cost": 400
         },
         "mechanical_pencil": {
-            "ja_name": "シャーペン",
+            "ja_name": "\u30b7\u30e3\u30fc\u30da\u30f3",
             "feature": "shot",
             "durability": 175,
-            "attack_power": 100,
+            "attack_power": 75,
             "cooldown": 40,
             "speed": 4,
             "attack_range_begin": 0,
@@ -57,32 +46,43 @@
             "cost": 600
         },
         "pencil_lead": {
-            "ja_name": "シャー芯",
+            "ja_name": "\u30b7\u30e3\u30fc\u82af",
             "feature": "arrow",
             "durability": 9999,
-            "attack_power": 100,
+            "attack_power": 75,
             "cooldown": 65535,
             "speed": 60,
             "attack_range_begin": 0,
             "attack_range_end": 60,
             "cost": 65535
         },
-        "battery": {
-            "ja_name": "バッテリー",
-            "feature": "battery",
-            "durability": 1,
-            "attack_power": 80,
-            "cooldown": 5,
+        "pencil_sharpener": {
+            "ja_name": "\u925b\u7b46\u524a\u308a",
+            "feature": "normal",
+            "durability": 900,
+            "attack_power": 30,
+            "cooldown": 20,
             "speed": 2,
             "attack_range_begin": 0,
-            "attack_range_end": 110,
-            "cost": 700
+            "attack_range_end": 300,
+            "cost": 650
+        },
+        "compass": {
+            "ja_name": "\u30b3\u30f3\u30d1\u30b9",
+            "feature": "long_range",
+            "durability": 250,
+            "attack_power": 95,
+            "cooldown": 20,
+            "speed": 4,
+            "attack_range_begin": 0,
+            "attack_range_end": 250,
+            "cost": 1000
         },
         "castle": {
-            "ja_name": "城",
+            "ja_name": "\u57ce",
             "feature": "normal",
             "durability": 1200,
-            "attack_power": 50,
+            "attack_power": 60,
             "cooldown": 25,
             "speed": 0,
             "attack_range_begin": 0,
