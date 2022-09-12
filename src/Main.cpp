@@ -1,4 +1,4 @@
-﻿# include <Siv3D.hpp>
+# include <Siv3D.hpp>
 #include <iostream>
 #include "json.hpp"
 using namespace std;
@@ -29,13 +29,19 @@ inline json open_json_file(String file_path){
 }
 //コンフィグ
 json config;
+JSON ConfigSiv3D;
 //コンフィグの値を取得する関数
 template <class Type>
 Type get_config_value(string type, string json_path){
     json result = config.at(json::json_pointer("/ability_config/" + type + "/" + json_path)).get<Type>();
     return result;
 }
-
+String GetConfigString (String type, String key) {
+    return ConfigSiv3D[U"ability_config"][type][key].getString();
+}
+//難易度
+int difficult_level = 2;
+//シーンマネージャーをAppに割り当てる
 using App = SceneManager<String>;
 // タイトルシーン
 class Title : public App::Scene
@@ -52,7 +58,7 @@ class Title : public App::Scene
         Title(const InitData& init)
         : IScene{ init }
         {
-            //背景を白くする
+            //背景を青くする
             Scene::SetBackground(Palette::Skyblue);
         }
         
@@ -60,7 +66,11 @@ class Title : public App::Scene
         void update() override
         {
             if (play_button.leftClicked()) {
-                changeScene(U"GameScene");
+                AudioAsset(U"choose").playOneShot();
+                changeScene(U"DifficultySetting");
+            } else if (rule_button.leftClicked()){
+                AudioAsset(U"choose").playOneShot();
+                changeScene(U"RuleExplanation");
             }
         }
         
@@ -78,7 +88,110 @@ class Title : public App::Scene
         }
 };
 
-// タイトルシーン
+class RuleExplanation : public App::Scene {
+    Font ViewFont{30};
+    //ページ数(1から数える)
+    uint8 page_num = 1;
+    Array<Texture> image_data = {
+        Texture{Resource(U"resource/tutorial/normal.png"), TextureDesc::Mipped},
+        Texture{Resource(U"resource/tutorial/castle.png"), TextureDesc::Mipped},
+        Texture{Resource(U"resource/tutorial/money.png"), TextureDesc::Mipped},
+        Texture{Resource(U"resource/tutorial/summon_button.png"), TextureDesc::Mipped},
+        Texture{Resource(U"resource/tutorial/money_button.png"), TextureDesc::Mipped},
+        Texture{Resource(U"resource/tutorial/fixing.png"), TextureDesc::Mipped}
+    };
+    Array<String> page_data = {
+        U"たまったお金で文房具を増やして、\n敵の文房具を倒し、最終的に\n相手の「城」を陥落させたら勝ちです。",
+        U"右の青い城が自分で、左の赤い城が敵です。\n城の上のバーを見れば、城が受けたダメージがわかります。",
+        U"表示された金額を払って、文房具を呼び出します。\n手持ちのお金はボタンの上に表示されています。",
+        U"お金が貯まり、下の文房具ボタンの色が変わったら、\nその文房具を呼び出せます。",
+        U"お金は時間経過で貯まりますが、\n投資ボタン（右下の黄色いボタン）をクリックすることで\n貯まる速度を早めることができます。",
+        U"自分の文房具を左クリックすると\nその場に固定し、右クリックすると固定を\n解除することもできます。"
+    };
+    public:
+        //コンストラクタ
+        RuleExplanation(const InitData& init)
+        : IScene{ init }
+        {
+            
+        }
+        // 更新関数（オプション）
+        void update() override
+        {
+            if (SimpleGUI::Button(U"<", Vec2{Scene::Center().x - 150, 485}) and page_num != 1) {
+                page_num --;
+            }
+            if (SimpleGUI::Button(U">", Vec2{Scene::Center().x + 100, 485}) and page_num < page_data.size()) {
+                page_num ++;
+            }
+            if (SimpleGUI::Button(U"タイトル画面に戻る", Vec2{10, 50})) {
+                AudioAsset(U"choose").playOneShot();
+                changeScene(U"Title");
+            }
+            if (SimpleGUI::Button(U"ゲームを始める", Vec2{Scene::Width() - 210, 50})){
+                AudioAsset(U"choose").playOneShot();
+                changeScene(U"DifficultySetting");
+            }
+        }
+        
+        // 描画関数（オプション）
+        void draw() const override
+        {
+            image_data[page_num - 1].resized(480, 270).drawAt(Scene::Center().x, Scene::Center().y - 100);
+            ViewFont(page_data[page_num - 1]).drawAt(Scene::Center().x, Scene::Center().y + 100);
+            ViewFont( Format(page_num) + U"/" + Format(page_data.size()) ).drawAt(Scene::Center().x, 500);
+            
+        }
+};
+class DifficultySetting : public App::Scene {
+    Font GuideFont{40};
+    Font ButtonFont{35};
+    Point EasyButtonPos{Scene::Center().x, Scene::Center().y - 30};
+    Rect EasyButton{Arg::center(EasyButtonPos), 500, 60};
+    Point NormalButtonPos{Scene::Center().x, Scene::Center().y + 60};
+    Rect NormalButton{Arg::center(NormalButtonPos), 500, 60};
+    Point HardButtonPos{Scene::Center().x, Scene::Center().y + 150};
+    Rect HardButton{Arg::center(HardButtonPos), 500, 60};
+    public:
+        //コンストラクタ
+        DifficultySetting(const InitData& init)
+        : IScene{ init }
+        {
+
+        }
+        // 更新関数（オプション）
+        void update() override
+        {
+            if (EasyButton.leftClicked()) {
+                difficult_level = 1;
+                AudioAsset(U"choose").playOneShot();
+                changeScene(U"GameScene");
+            } else if (NormalButton.leftClicked()){
+                difficult_level = 2;
+                AudioAsset(U"choose").playOneShot();
+                changeScene(U"GameScene");
+            } else if (HardButton.leftClicked()) {
+                difficult_level = 3;
+                AudioAsset(U"choose").playOneShot();
+                changeScene(U"GameScene");
+            }
+        }
+        
+        // 描画関数（オプション）
+        void draw() const override
+        {
+            GuideFont(U"難易度を選択してください").drawAt(Scene::Center().x, 100);
+            EasyButton.draw(EasyButton.mouseOver() ? Palette::Green : Palette::Lightgreen).drawFrame(1, Palette::Black);
+            ButtonFont(U"簡単").drawAt(EasyButtonPos,Palette::Black);
+            NormalButton.draw(NormalButton.mouseOver() ? Palette::Cadetblue : Palette::Azure).drawFrame(1, Palette::Black);
+            ButtonFont(U"ちょっと難しい（ノーマル）").drawAt(NormalButtonPos,Palette::Black);
+            HardButton.draw(HardButton.mouseOver() ? Palette::Darkred : Palette::Orangered).drawFrame(1, Palette::Black);
+            ButtonFont(U"ほぼ不可能").drawAt(HardButtonPos,Palette::Black);
+            
+        }
+};
+
+// ゲームシーン
 class GameScene : public App::Scene
 {
     //game_unitのクラス
@@ -282,7 +395,13 @@ class GameScene : public App::Scene
         Texture{ Resource(U"resource/texture/crack/crack-2.png"), TextureDesc::Mipped }.resized(texture_size),
         Texture{ Resource(U"resource/texture/crack/crack-3.png"), TextureDesc::Mipped }.resized(texture_size) };
     //攻撃音
-    const Audio hit_pop_1{Resource(U"resource/sound/hit_pop_1.ogg")};
+    const Audio HitPop{Resource(U"resource/sound/hit_pop_1.ogg")};
+    //召喚音
+    const Audio SummonSound{Resource(U"resource/sound/summon.ogg")};
+    //資金力ボタンが押せるようになった時の音
+    const Audio MoneyAvailable{Resource(U"resource/sound/money_available.mp3")};
+    //BGM
+    const Audio BGM{Audio::Stream, Resource(U"resource/sound/bgm.mp3"), Loop::Yes};
     //エフェクト
     Effect effect;
     //勝敗を記録する変数
@@ -293,14 +412,14 @@ class GameScene : public App::Scene
     Array<summon_button> summon_button_list;
     //召喚ボタンのラベルのフォント
     Font sumbtn_label_font{(int32)(texture_size * 0.15)};
-    //資金力増加ボタンの背景
+    //資金力強化ボタンの背景
     Rect money_button{Scene::Size().x - texture_size, Scene::Size().y - texture_size, texture_size, texture_size};
-    //資金力増加ボタンのラベルのフォント
+    //資金力強化ボタンのラベルのフォント
     Font money_label_font{18};
     //資金情報
     Font money_info_label_font{22};
-    //難易度
-    int difficult_level = 2;
+    //解説のフォント
+    Font DescriptionFont{25};
     //勝敗決定後の待機時間
     float waiting_time = 0;
     //敵AIの変数
@@ -312,6 +431,8 @@ class GameScene : public App::Scene
     String AITarget = U"";
     //AIの貯金
     uint16 AISavingMoney = 0;
+    //「1ティック前に」資金力ボタンが押せたか
+    bool WasMoneyButtonAvilable = false;
     void AISaveMoney(){
         if (AISavingMoney < (AIStep + 1) * 25 * Math::Pow(2, enemy.money_level) ) {
             AISavingMoney += enemy.money;
@@ -342,6 +463,7 @@ public:
         //城を造る
         game_unit_list.push_back(game_unit(U"castle", true, 40));
         game_unit_list.push_back(game_unit(U"castle", false, Scene::Width() - 40));
+        BGM.play();
     }
     
     // 更新関数（オプション）
@@ -415,8 +537,8 @@ public:
             game_unit_list[i].collision_detection.setPos(Arg::center(game_unit_list[i].x, Scene::Center().y - overlapped_unit_count * texture_size / 8));
         }
         //敵を召喚する簡易ボタン
-#if DEBUG
-        if (not KeyShift.pressed()) {
+#ifdef DEBUG
+        if (KeyShift.pressed()) {
                 if (SimpleGUI::Button(U"敵鉛筆召喚", Vec2{ 0, 100 }))
             {
                 summon_game_unit(U"pencil",false);
@@ -433,12 +555,14 @@ public:
 #endif
         //背景の描画
         {
-            const uint16 line = Scene::Center().y + texture_size/2 + 5;
+            const uint16 line = Scene::Center().y + texture_size/2;
             //土！！！！
             Rect{ 0, line, Scene::Width(), Scene::Height() - line }.draw(Color{ 175, 108, 53 });
             //草！！！！
             Rect{ 0, line, Scene::Width(), 25 }.draw(Palette::Forestgreen);
         }
+        //
+        String MouseOveredButton = U"";
         //召喚ボタンの描画
         for (unsigned long int i = 0; i < summon_button_list.size(); i++){
             //背景と枠線の描画
@@ -446,21 +570,46 @@ public:
             //画像の描画(* 0.4 = * 0.8 / 2)
             summon_button_list[i].texture.resized(texture_size * 0.8).drawAt(summon_button_list[i].x,Scene::Size().y - texture_size * 0.4);
             //ラベルの描画
-            sumbtn_label_font(game_unit_info_list.at(summon_button_list[i].type.narrow()).ja_name + U"|" + Format(game_unit_info_list.at(summon_button_list[i].type.narrow()).cost)).drawAt(summon_button_list[i].x,Scene::Size().y - texture_size * 0.875);
+            sumbtn_label_font(Format(game_unit_info_list.at(summon_button_list[i].type.narrow()).cost) + U"円").drawAt(summon_button_list[i].x,Scene::Size().y - texture_size * 0.875);
+            if (summon_button_list[i].background.mouseOver()) {
+                MouseOveredButton = summon_button_list[i].type;
+            }
             //ボタンがクリックされたら
             if (summon_button_list[i].background.leftClicked()) {
-                //game_unitを召喚する
-                summon_game_unit(summon_button_list[i].type, true);
+                //条件式を評価することでgame_unitを召喚する
+                if (summon_game_unit(summon_button_list[i].type, true)){
+                    SummonSound.playOneShot();
+                }
             }
         }
-        //資金力増加ボタン
-        money_button.draw(120 * Math::Pow(2, player.money_level) > player.money ? Palette::Darkgoldenrod : money_button.mouseOver() ? Palette::Goldenrod : Palette::Gold).drawFrame(3, 0, Palette::Peru);
-        money_label_font( U"資金力増加\n" + Format(120 * Math::Pow(2, player.money_level)) ).drawAt(Scene::Width() - texture_size / 2, Scene::Height() - texture_size * 0.5);
+        
+        //資金力強化ボタン
+        money_button.draw(120 * Math::Pow(2, player.money_level) > player.money ? static_cast<HSV>(Palette::Darkgoldenrod) : money_button.mouseOver() ? static_cast<HSV>(Palette::Goldenrod) : HSV{ 40, 0.8, 1.0 }).drawFrame(3, 0, Palette::Goldenrod);
+        money_label_font( U"資金力強化に\n投資する\n" + Format(120 * Math::Pow(2, player.money_level)) + U"円" ).drawAt(Scene::Width() - texture_size / 2, Scene::Height() - texture_size * 0.5);
         if (money_button.leftClicked() and player.money >= 120 * Math::Pow(2, player.money_level)) {
             player.money -=  120 * Math::Pow(2, player.money_level);
             player.money_level ++;
+            SummonSound.playOneShot();
         }
-        money_info_label_font(U"資金残高: " + Format(player.money)).draw(0, Scene::Height() - texture_size - 40);
+        if (player.money >= 120 * Math::Pow(2, player.money_level)) {
+            if (not WasMoneyButtonAvilable) {
+                MoneyAvailable.playOneShot();
+                WasMoneyButtonAvilable = true;
+                
+            }
+        } else {
+            WasMoneyButtonAvilable = false;
+        }
+        
+        //資金残高表記
+        money_info_label_font(U"手持ちのお金: " + Format(player.money) + U"円").draw(0, Scene::Height() - texture_size - 40);
+        
+        //説明欄
+        if (not (MouseOveredButton == U"")) {
+            Rect{0, 0, Scene::Width(), 150}.draw(ColorF(Palette::Dimgray, 0.8)).drawFrame(2, 0, Palette::Black);
+            DescriptionFont(GetConfigString(MouseOveredButton, U"description")).draw(texture_size + 30, 10);
+        }
+              
         //耐久力バーの描画
         if (winner == 0) {
             // hard coding
@@ -489,6 +638,7 @@ public:
             Line{Scene::Width() - 110, Scene::Center().y - 100, Scene::Width() - 10, Scene::Center().y - 100}.draw(10, Palette::Darkgray);
             Line{Scene::Width() - 10 - 100 * enemy_castle_damage_proportion, Scene::Center().y - 100, Scene::Width() - 10, Scene::Center().y - 100}.draw(10, enemy_castle_bar_color);
         }
+        
         //game_unitの行動処理（0.1秒刻み）
         while ( 0.1 <= action_accumulator) {
             //デバック情報の削除
@@ -553,7 +703,7 @@ public:
                         }
                     } else {
                         //攻撃の効果音
-                        hit_pop_1.playOneShot();
+                        HitPop.playOneShot();
                     }
                     
                 } else {
@@ -651,7 +801,7 @@ public:
                                 break;
                             }
                 } else {
-                        //地獄プロセス
+                        //攻めプロセス
                         switch (enemy.money_level) {
                             case 0:
                             case 1:
@@ -687,10 +837,10 @@ public:
                     AIStep ++;
                     AITarget = U"";
                 }
-#if DEBUG
-                if (not KeyShift.pressed()) {
+#ifdef DEBUG
+                if (KeyShift.pressed()) {
                     Print << U"Mode: " << AIMode;
-                    Print << U"Target: " << (AITarget == U"" ? U"資金力増加" : AITarget);
+                    Print << U"Target: " << (AITarget == U"" ? U"資金力強化" : AITarget);
                     Print << U"power" + Format(friend_power) + U"/" + Format(enemy_power);
                     Print << U"money: " + Format(player.money) + U" / " + Format(enemy.money);
                 }
@@ -741,15 +891,20 @@ public:
 
 void Main(){
     config = open_json_file(Resource(U"resource/config.json"));
+    ConfigSiv3D = JSON::Load(Resource(U"resource/config.json"));
     // シーンマネージャーを作成
     App manager;
     // シーンの登録
     manager.add<Title>(U"Title");
     manager.add<GameScene>(U"GameScene");
+    manager.add<RuleExplanation>(U"RuleExplanation");
+    manager.add<DifficultySetting>(U"DifficultySetting");
     //ウィンドウサイズの設定
     Window::Resize(960,540);
     Scene::SetResizeMode(ResizeMode::Keep);
     Window::SetStyle(WindowStyle::Sizable);
+    //オーディオアセットの登録
+    AudioAsset::Register(U"choose", Resource(U"resource/sound/choose.ogg"));
     //毎フレームごとの処理
     while (System::Update()) {
         if (not manager.update()){
