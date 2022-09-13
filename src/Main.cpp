@@ -1,8 +1,6 @@
 # include <Siv3D.hpp>
 #include <iostream>
-#include "json.hpp"
 using namespace std;
-using json = nlohmann::json;
 //MacでSceneManagerを使うための定義
 #ifdef TARGET_OS_MAC
 bool s3d::operator==(s3d::String const& left, s3d::String const& right) noexcept {
@@ -11,33 +9,16 @@ bool s3d::operator==(s3d::String const& left, s3d::String const& right) noexcept
 #endif
 
 const int texture_size = 120;
-//jsonファイルを開いてパーズする変数
-inline json open_json_file(String file_path){
-    //jsonファイルを開く
-    TextReader json_file{ file_path };
-    //jsonファイルを開けたか判定
-    if (json_file.isOpen()){
-        cout << "Opened "<< file_path <<"." << endl;
-    } else{
-        throw Error{U"Failed to open \'" + file_path + U"'."};
-    }
-    const string json_law = json_file.readAll().narrow();
-    //jsonファイルの中身を読み込んでパーズする
-    cout << json_file.readAll().narrow() << endl;
-    json json_data = json::parse(json_law);
-    return json_data;
-}
 //コンフィグ
-json config;
-JSON ConfigSiv3D;
+JSON ConfigJson;
 //コンフィグの値を取得する関数
 template <class Type>
-Type get_config_value(string type, string json_path){
-    json result = config.at(json::json_pointer("/ability_config/" + type + "/" + json_path)).get<Type>();
-    return result;
+Type get_config_value(String type, String key){
+    return ConfigJson[U"ability_config"][type][key].get<Type>();
 }
-String GetConfigString (String type, String key) {
-    return ConfigSiv3D[U"ability_config"][type][key].getString();
+
+String GetStringValue (String type, String key) {
+    return ConfigJson[U"ability_config"][type][key].getString();
 }
 //難易度
 int difficult_level = 2;
@@ -213,7 +194,6 @@ class GameScene : public App::Scene
         bool is_fixed = false;
         //コンストラクター
         game_unit(String type, bool is_friend){
-            string type_ss = type.narrow();
             if (is_friend){
                 this->x = 50;
             } else{
@@ -221,14 +201,13 @@ class GameScene : public App::Scene
             }
             this->type = type;
             this->is_friend = is_friend;
-            this->durability = get_config_value<uint16>(type_ss, "durability");
+            this->durability = get_config_value<uint16>(type, U"durability");
         };
         game_unit(String type, bool is_friend, uint16 x){
-            string type_ss = type.narrow();
             this->x = x;
             this->type = type;
             this->is_friend = is_friend;
-            this->durability = get_config_value<uint16>(type_ss, "durability");
+            this->durability = get_config_value<uint16>(type, U"durability");
         }
         //当たり判定
         Rect collision_detection{120,120};
@@ -246,10 +225,9 @@ class GameScene : public App::Scene
     Array<game_unit> game_unit_list;
     //game_unitを召喚する関数
     bool summon_game_unit(String type, bool is_friend){
-        string type_ss = type.narrow();
-        if ((is_friend ? player.money : enemy.money) >= get_config_value<uint16>(type_ss, "cost")){
+        if ((is_friend ? player.money : enemy.money) >= get_config_value<uint16>(type, U"cost")){
             game_unit_list.push_back(game_unit(type,is_friend));
-            (is_friend ? player.money : enemy.money) -= get_config_value<uint16>(type_ss, "cost");
+            (is_friend ? player.money : enemy.money) -= get_config_value<uint16>(type, U"cost");
         } else {
             return false;
         }
@@ -318,22 +296,21 @@ class GameScene : public App::Scene
         }
         //コンストラクター
         game_unit_info(String type){
-            string type_ss = type.narrow();
-            this->ja_name = Unicode::Widen(get_config_value<string>(type_ss, "ja_name"));
-            this->feature = Unicode::Widen(get_config_value<string>(type_ss, "feature"));
-            this->durability = get_config_value<uint16>(type_ss, "durability");
-            this->attack_power = get_config_value<uint16>(type_ss, "attack_power");
-            this->speed = get_config_value<uint16>(type_ss, "speed");
-            this->cooldown = get_config_value<uint16>(type_ss, "cooldown");
-            this->attack_range_begin = get_config_value<uint16>(type_ss, "attack_range_begin");
-            this->attack_range_end = get_config_value<uint16>(type_ss, "attack_range_end");
-            this->cost = get_config_value<uint16>(type_ss, "cost");
+            this->ja_name = GetStringValue(type, U"ja_name");
+            this->feature = GetStringValue(type, U"feature");
+            this->durability = get_config_value<uint16>(type, U"durability");
+            this->attack_power = get_config_value<uint16>(type, U"attack_power");
+            this->speed = get_config_value<uint16>(type, U"speed");
+            this->cooldown = get_config_value<uint16>(type, U"cooldown");
+            this->attack_range_begin = get_config_value<uint16>(type, U"attack_range_begin");
+            this->attack_range_end = get_config_value<uint16>(type, U"attack_range_end");
+            this->cost = get_config_value<uint16>(type, U"cost");
             this->friend_texture = Texture{ Resource(U"resource/texture/" + type + U"/friend.png"), TextureDesc::Mipped };
             this->friend_attack_texture = Texture{ Resource(U"resource/texture/" + type + U"/friend_attack.png"), TextureDesc::Mipped };
             this->enemy_texture = Texture{ Resource(U"resource/texture/" + type + U"/enemy.png"), TextureDesc::Mipped };
             this->enemy_attack_texture = Texture{ Resource(U"resource/texture/" + type + U"/enemy_attack.png"), TextureDesc::Mipped };
             //攻撃の総合的な強さ
-            this->general_attack_power = get_config_value<double>(type_ss, "attack_power") / get_config_value<double>(type_ss, "cooldown") * (get_config_value<double>(type_ss, "attack_range_end") - get_config_value<double>(type_ss, "attack_range_begin"));
+            this->general_attack_power = get_config_value<double>(type, U"attack_power") / get_config_value<double>(type, U"cooldown") * (get_config_value<double>(type, U"attack_range_end") - get_config_value<double>(type, U"attack_range_begin"));
             // レンダーテクスチャをクリア
             friend_normal_mask_render_texture.clear(ColorF{ 0.0, 1.0 });
             friend_attack_mask_render_texture.clear(ColorF{ 0.0, 1.0 });
@@ -420,6 +397,7 @@ class GameScene : public App::Scene
     Font money_info_label_font{22};
     //解説のフォント
     Font DescriptionFont{25};
+    Font NameFont{20};
     //勝敗決定後の待機時間
     float waiting_time = 0;
     //敵AIの変数
@@ -454,11 +432,10 @@ public:
         //召喚ボタン・ユニットの情報の登録
         game_unit_info_list.emplace("castle", game_unit_info(U"castle"));
         game_unit_info_list.emplace("pencil_lead", game_unit_info(U"pencil_lead"));
-        for( int i=0; auto& el : config.at("all_types")) {
-            String type = Unicode::Widen(el.get<string>());
-            summon_button_list.push_back(summon_button(Unicode::Widen(el.get<string>()),i));
-            game_unit_info_list.emplace(el.get<string>(), game_unit_info(type));
-            i++;
+        for( unsigned long int i=0; i <  ConfigJson[U"all_types"].size(); i++) {
+            String type = ConfigJson[U"all_types"][i].getString();
+            summon_button_list.push_back(summon_button(ConfigJson[U"all_types"][i].getString(), i));
+            game_unit_info_list.emplace(ConfigJson[U"all_types"][i].getString().narrow(), game_unit_info(type));
         };
         //城を造る
         game_unit_list.push_back(game_unit(U"castle", true, 40));
@@ -566,7 +543,7 @@ public:
         //召喚ボタンの描画
         for (unsigned long int i = 0; i < summon_button_list.size(); i++){
             //背景と枠線の描画
-            summon_button_list[i].background.draw(get_config_value<int>(summon_button_list[i].type.narrow(), "cost") > player.money ? ColorF{ 0.4, 0.4, 0.4 } : summon_button_list[i].background.mouseOver() ? ColorF{ 0.5, 0.5, 0.5 } : ColorF{ 0.7, 0.7, 0.7 }).drawFrame(3, 0, ColorF{ 0.3, 0.3, 0.3 });
+            summon_button_list[i].background.draw(get_config_value<int>(summon_button_list[i].type, U"cost") > player.money ? ColorF{ 0.4, 0.4, 0.4 } : summon_button_list[i].background.mouseOver() ? ColorF{ 0.5, 0.5, 0.5 } : ColorF{ 0.7, 0.7, 0.7 }).drawFrame(3, 0, ColorF{ 0.3, 0.3, 0.3 });
             //画像の描画(* 0.4 = * 0.8 / 2)
             summon_button_list[i].texture.resized(texture_size * 0.8).drawAt(summon_button_list[i].x,Scene::Size().y - texture_size * 0.4);
             //ラベルの描画
@@ -607,7 +584,9 @@ public:
         //説明欄
         if (not (MouseOveredButton == U"")) {
             Rect{0, 0, Scene::Width(), 150}.draw(ColorF(Palette::Dimgray, 0.8)).drawFrame(2, 0, Palette::Black);
-            DescriptionFont(GetConfigString(MouseOveredButton, U"description")).draw(texture_size + 30, 10);
+            DescriptionFont(GetStringValue(MouseOveredButton, U"description")).draw(texture_size + 30, 10);
+            game_unit_info_list.at(MouseOveredButton.narrow()).get_normal_texture(true).draw(14, 2);
+            NameFont(GetStringValue(MouseOveredButton, U"ja_name")).draw(2, texture_size + 2);
         }
               
         //耐久力バーの描画
@@ -890,8 +869,7 @@ public:
 
 
 void Main(){
-    config = open_json_file(Resource(U"resource/config.json"));
-    ConfigSiv3D = JSON::Load(Resource(U"resource/config.json"));
+    ConfigJson = JSON::Load(Resource(U"resource/config.json"));
     // シーンマネージャーを作成
     App manager;
     // シーンの登録
