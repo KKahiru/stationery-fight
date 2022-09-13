@@ -173,23 +173,62 @@ Resource(resource/texture/pencil_sharpener/friend_attack_silhouette.png)
 Resource(resource/texture/pencil_sharpener/enemy_silhouette.png)
 Resource(resource/texture/pencil_sharpener/enemy_attack_silhouette.png)
 
+//compass
+Resource(resource/texture/compass/friend.png)
+Resource(resource/texture/compass/friend_attack.png)
+Resource(resource/texture/compass/enemy.png)
+Resource(resource/texture/compass/enemy_attack.png)
+Resource(resource/texture/compass/friend_silhouette.png)
+Resource(resource/texture/compass/friend_attack_silhouette.png)
+Resource(resource/texture/compass/enemy_silhouette.png)
+Resource(resource/texture/compass/enemy_attack_silhouette.png)
+
 //castle
 Resource(resource/texture/castle/friend.png)
 Resource(resource/texture/castle/friend_attack.png)
 Resource(resource/texture/castle/enemy.png)
 Resource(resource/texture/castle/enemy_attack.png)
+Resource(resource/texture/castle/friend_silhouette.png)
+Resource(resource/texture/castle/friend_attack_silhouette.png)
+Resource(resource/texture/castle/enemy_silhouette.png)
+Resource(resource/texture/castle/enemy_attack_silhouette.png)
 
 //pencil_lead
 Resource(resource/texture/pencil_lead/friend.png)
 Resource(resource/texture/pencil_lead/enemy.png)
 
-Resource(resource/config.json)
-Resource(resource/shader/hlsl/multi_texture_mask.hlsl)
+//crack
+Resource(resource/texture/crack/crack-1.png)
+Resource(resource/texture/crack/crack-2.png)
+Resource(resource/texture/crack/crack-3.png)
 
 //
 // Sounds
 //
+
+//A sound when damaged
 Resource(resource/sound/hit_pop_1.ogg)
+
+//Choose
+Resource(resource/sound/choose.ogg)
+
+//Summon
+Resource(resource/sound/summon.ogg)
+
+//Money available
+Resource(resource/sound/money_available.mp3)
+
+//BGM
+Resource(resource/sound/bgm.mp3)
+
+//
+// Other Files
+//
+
+//config
+Resource(resource/config.json)
+//shader
+Resource(resource/shader/hlsl/multi_texture_mask.hlsl)
 
 /* examples
 
