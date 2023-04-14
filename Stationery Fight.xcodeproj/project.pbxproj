@@ -74,7 +74,6 @@
 		2C5C470D26B4F08A005E8C85 /* libopus.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libopus.a; path = ../../lib/macOS/opus/libopus.a; sourceTree = "<group>"; };
 		2C5C471026B4F08E005E8C85 /* libzlib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libzlib.a; path = ../../lib/macOS/zlib/libzlib.a; sourceTree = "<group>"; };
 		2C6906D72298140F00A427D0 /* engine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = engine; path = App/engine; sourceTree = "<group>"; };
-		A5470BC227FD1BCE00B2F853 /* json.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = json.hpp; sourceTree = "<group>"; };
 		A57A427A280BB50A004B0397 /* resource */ = {isa = PBXFileReference; lastKnownFileType = folder; name = resource; path = App/resource; sourceTree = "<group>"; };
 		A5FE32A827FC7EC400DAA541 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -143,7 +142,6 @@
 			isa = PBXGroup;
 			children = (
 				2C1778991CE0AA7C00BB8AD0 /* Main.cpp */,
-				A5470BC227FD1BCE00B2F853 /* json.hpp */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -406,14 +404,14 @@
 					../../lib/macOS/zlib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-fvisibility=hidden",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = siv3d.empty;
+				PRODUCT_BUNDLE_IDENTIFIER = "siv3d.stationery-fight";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				WARNING_CFLAGS = (
@@ -481,14 +479,14 @@
 					../../lib/macOS/zlib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-fvisibility=hidden",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = siv3d.empty;
+				PRODUCT_BUNDLE_IDENTIFIER = "siv3d.stationery-fight";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				WARNING_CFLAGS = (

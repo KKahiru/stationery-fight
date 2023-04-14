@@ -1,12 +1,6 @@
-# include <Siv3D.hpp>
+# include <Siv3D.hpp> // OpenSiv3D v0.6.8
 #include <iostream>
 using namespace std;
-//MacでSceneManagerを使うための定義
-#ifdef TARGET_OS_MAC
-bool s3d::operator==(s3d::String const& left, s3d::String const& right) noexcept {
-    return left.narrow() == right.narrow();
-}
-#endif
 
 const int texture_size = 120;
 //コンフィグ
