@@ -1,5 +1,6 @@
 {
-    "all_types":["eraser","pencil","triangle","mechanical_pencil","pencil_sharpener","compass"],
+    "all_types":["eraser","pencil","triangle","mechanical_pencil","pencil_lead","pencil_sharpener","compass","castle"],
+    "available_types":["eraser","pencil","triangle","mechanical_pencil","pencil_sharpener","compass"],
     "ability_config":{
         "pencil": {
             "ja_name": "\u925b\u7b46",

@@ -1,6 +1,7 @@
 # include <Siv3D.hpp> // OpenSiv3D v0.6.8
-#include <iostream>
-using namespace std;
+# include "logic.hpp"
+
+using namespace stfi;
 
 const int texture_size = 120;
 //コンフィグ
@@ -169,43 +170,6 @@ class DifficultySetting : public App::Scene {
 // ゲームシーン
 class GameScene : public App::Scene
 {
-    //game_unitのクラス
-    class game_unit{
-    public:
-        //味方かのbool値
-        bool is_friend;
-        //game_unitのタイプ
-        String type;
-        //x座標
-        uint16 x;
-        //耐久値
-        int16 durability;
-        //クールダウン
-        uint16 cooldown = 0;
-        //ノックバック
-        uint16 knock_back = 0;
-        //固定されているか
-        bool is_fixed = false;
-        //コンストラクター
-        game_unit(String type, bool is_friend){
-            if (is_friend){
-                this->x = 50;
-            } else{
-                this->x = Scene::Size().x - 50;
-            }
-            this->type = type;
-            this->is_friend = is_friend;
-            this->durability = get_config_value<uint16>(type, U"durability");
-        };
-        game_unit(String type, bool is_friend, uint16 x){
-            this->x = x;
-            this->type = type;
-            this->is_friend = is_friend;
-            this->durability = get_config_value<uint16>(type, U"durability");
-        }
-        //当たり判定
-        Rect collision_detection{120,120};
-    };
     //プレイヤーの情報を格納する構造体
     struct player_info{
         uint16 money = 0;
@@ -216,11 +180,11 @@ class GameScene : public App::Scene
     player_info player;
     player_info enemy;
     //ステージ上のgame_unitのリスト
-    Array<game_unit> game_unit_list;
+    Array<GameUnit> GameUnitList;
     //game_unitを召喚する関数
     bool summon_game_unit(String type, bool is_friend){
         if ((is_friend ? player.money : enemy.money) >= get_config_value<uint16>(type, U"cost")){
-            game_unit_list.push_back(game_unit(type,is_friend));
+            GameUnitList.push_back(GameUnit(GameUnitTypeList[type], is_friend));
             (is_friend ? player.money : enemy.money) -= get_config_value<uint16>(type, U"cost");
         } else {
             return false;
@@ -244,95 +208,6 @@ class GameScene : public App::Scene
         Rect background;
         
     };
-    //game_unitの情報を格納する構造体
-    struct game_unit_info {
-        //日本語名
-        String ja_name;
-        //特性
-        String feature;
-        //耐久力
-        uint16 durability;
-        //攻撃力
-        uint16 attack_power;
-        //移動速度
-        uint16 speed;
-        //攻撃時にセットするクールダウン
-        uint16 cooldown;
-        //攻撃範囲の始まり
-        uint16 attack_range_begin;
-        //攻撃範囲の終わり
-        uint16 attack_range_end;
-        //コスト
-        uint16 cost;
-        //通常時テクスチャー
-        Texture friend_texture;
-        //攻撃時テクスチャー
-        Texture friend_attack_texture;
-        //通常時テクスチャー
-        Texture enemy_texture;
-        //攻撃時テクスチャー
-        Texture enemy_attack_texture;
-        //通常時テクスチャの形のマスクのレンダーテクスチャ
-        RenderTexture friend_normal_mask_render_texture{ texture_size, texture_size };
-        RenderTexture enemy_normal_mask_render_texture{ texture_size, texture_size };
-        //攻撃時テクスチャの形のマスクのレンダーテクスチャ
-        RenderTexture friend_attack_mask_render_texture{ texture_size, texture_size };
-        RenderTexture enemy_attack_mask_render_texture{ texture_size, texture_size };
-        //総合的な攻撃の強さ
-        uint16 general_attack_power;
-        //通常時テクスチャをtexture_sizeにリサイズして返す関数
-        TextureRegion get_normal_texture(bool is_friend){
-            return is_friend ? this->friend_texture.resized(texture_size) : this->enemy_texture.resized(texture_size);
-        }
-        //攻撃時テクスチャをtexture_sizeにリサイズして返す関数
-        TextureRegion get_attack_texture(bool is_friend){
-            return is_friend ? this->friend_attack_texture.resized(texture_size) : this->enemy_attack_texture.resized(texture_size);
-        }
-        //コンストラクター
-        game_unit_info(String type){
-            this->ja_name = GetStringValue(type, U"ja_name");
-            this->feature = GetStringValue(type, U"feature");
-            this->durability = get_config_value<uint16>(type, U"durability");
-            this->attack_power = get_config_value<uint16>(type, U"attack_power");
-            this->speed = get_config_value<uint16>(type, U"speed");
-            this->cooldown = get_config_value<uint16>(type, U"cooldown");
-            this->attack_range_begin = get_config_value<uint16>(type, U"attack_range_begin");
-            this->attack_range_end = get_config_value<uint16>(type, U"attack_range_end");
-            this->cost = get_config_value<uint16>(type, U"cost");
-            this->friend_texture = Texture{ Resource(U"resource/texture/" + type + U"/friend.png"), TextureDesc::Mipped };
-            this->friend_attack_texture = Texture{ Resource(U"resource/texture/" + type + U"/friend_attack.png"), TextureDesc::Mipped };
-            this->enemy_texture = Texture{ Resource(U"resource/texture/" + type + U"/enemy.png"), TextureDesc::Mipped };
-            this->enemy_attack_texture = Texture{ Resource(U"resource/texture/" + type + U"/enemy_attack.png"), TextureDesc::Mipped };
-            //攻撃の総合的な強さ
-            this->general_attack_power = get_config_value<double>(type, U"attack_power") / get_config_value<double>(type, U"cooldown") * (get_config_value<double>(type, U"attack_range_end") - get_config_value<double>(type, U"attack_range_begin"));
-            // レンダーテクスチャをクリア
-            friend_normal_mask_render_texture.clear(ColorF{ 0.0, 1.0 });
-            friend_attack_mask_render_texture.clear(ColorF{ 0.0, 1.0 });
-            enemy_normal_mask_render_texture.clear(ColorF{ 0.0, 1.0 });
-            enemy_attack_mask_render_texture.clear(ColorF{ 0.0, 1.0 });
-            {
-                // レンダーターゲットをnormal_mask_render_texture.clearに設定
-                const ScopedRenderTarget2D target{ friend_normal_mask_render_texture };
-                Texture{ Resource(U"resource/texture/" + type + U"/friend_silhouette.png"), TextureDesc::Mipped }.resized(texture_size).drawAt(friend_normal_mask_render_texture.size() / 2);
-            }
-            {
-                // レンダーターゲットをattack_mask_render_textureに設定
-                const ScopedRenderTarget2D target{ friend_attack_mask_render_texture };
-                Texture{ Resource(U"resource/texture/" + type + U"/friend_attack_silhouette.png"), TextureDesc::Mipped }.resized(texture_size).drawAt(friend_attack_mask_render_texture.size() / 2);
-            }
-            {
-                // レンダーターゲットをnormal_mask_render_texture.clearに設定
-                const ScopedRenderTarget2D target{ enemy_normal_mask_render_texture };
-                Texture{ Resource(U"resource/texture/" + type + U"/enemy_silhouette.png"), TextureDesc::Mipped }.resized(texture_size).drawAt(enemy_normal_mask_render_texture.size() / 2);
-            }
-            {
-                // レンダーターゲットをattack_mask_render_textureに設定
-                const ScopedRenderTarget2D target{ enemy_attack_mask_render_texture };
-                Texture{ Resource(U"resource/texture/" + type + U"/enemy_attack_silhouette.png"), TextureDesc::Mipped }.resized(texture_size).drawAt(enemy_attack_mask_render_texture.size() / 2);
-            }
-            
-        };
-    };
     //ゲーム終了時のエフェクト
     struct FinishEffect : IEffect
     {
@@ -352,11 +227,11 @@ class GameScene : public App::Scene
             return (t < 3.0);
         }
     };
-    //game_unit_infoの連装配列
-    unordered_map<string, game_unit_info> game_unit_info_list = {};
-    //game_unitからgame_unit_infoを取得する関数
-    game_unit_info get_game_unit_info(game_unit& target){
-        return game_unit_info_list.at(target.type.narrow());
+    //GameUnitTypeの連装配列
+    HashTable<String, GameUnitType> GameUnitTypeList = {};
+    //GameUnitからGameUnitTypeを取得する関数
+    GameUnitType GetGameUnitType(const GameUnit& target){
+        return GameUnitTypeList.at(target.type);
     }
     // 蓄積された時間（秒）
     double action_accumulator = 0.0;
@@ -424,16 +299,27 @@ public:
             throw Error{U"Error! Failed to load a shader file."};
         }
         //召喚ボタン・ユニットの情報の登録
-        game_unit_info_list.emplace("castle", game_unit_info(U"castle"));
-        game_unit_info_list.emplace("pencil_lead", game_unit_info(U"pencil_lead"));
         for( unsigned long int i=0; i <  ConfigJson[U"all_types"].size(); i++) {
             String type = ConfigJson[U"all_types"][i].getString();
-            summon_button_list.push_back(summon_button(ConfigJson[U"all_types"][i].getString(), i));
-            game_unit_info_list.emplace(ConfigJson[U"all_types"][i].getString().narrow(), game_unit_info(type));
+            JSON unit = ConfigJson[U"ability_config"][type];
+            GameUnitTypeList.emplace(type, GameUnitType(type,
+                                                        FeaturesTable[unit[U"feature"].get<String>()],
+                                                        unit[U"durability"].get<uint16>(),
+                                                        unit[U"attack_power"].get<uint16>(),
+                                                        unit[U"attack_range_end"].get<uint16>(),
+                                                        unit[U"cooldown"].get<uint16>(),
+                                                        unit[U"speed"].get<uint16>(),
+                                                        unit[U"cost"].get<uint16>(),
+                                                        unit[U"ja_name"].get<String>(),
+                                                        unit[U"description"].get<String>()
+                                                        ));
+        };
+        for( unsigned long int i=0; i <  ConfigJson[U"available_types"].size(); i++) {
+            summon_button_list.push_back(summon_button(ConfigJson[U"available_types"][i].getString(), i));
         };
         //城を造る
-        game_unit_list.push_back(game_unit(U"castle", true, 40));
-        game_unit_list.push_back(game_unit(U"castle", false, Scene::Width() - 40));
+        GameUnitList.push_back(GameUnit(GameUnitTypeList[U"castle"], true, 40));
+        GameUnitList.push_back(GameUnit(GameUnitTypeList[U"castle"], false, Scene::Width() - 40));
         BGM.play();
     }
     
@@ -444,36 +330,36 @@ public:
         action_accumulator += Scene::DeltaTime();
         income_accumulator += Scene::DeltaTime();
         //game_unitの描画・クリック時の処理
-        for (unsigned long int i = 0; i < game_unit_list.size(); i++) {
+        for (unsigned long int i = 0; i < GameUnitList.size(); i++) {
             //自分の前に重なっているgame_unitのカウント数
             int overlapped_unit_count = 0;
-            for (long int j = 0; j < distance(game_unit_list.begin(), game_unit_list.begin() + i); j++){
-                if (game_unit_list[j].x < game_unit_list[i].x + texture_size/4*3 and game_unit_list[j].x > game_unit_list[i].x - texture_size/4*3 and game_unit_list[j].type.narrow() != "castle" and game_unit_list[j].type.narrow() != "pencil_lead") {
+            for (long int j = 0; j < distance(GameUnitList.begin(), GameUnitList.begin() + i); j++){
+                if (GameUnitList[j].x < GameUnitList[i].x + texture_size/4*3 and GameUnitList[j].x > GameUnitList[i].x - texture_size/4*3 and GameUnitList[j].type.narrow() != "castle" and GameUnitList[j].type.narrow() != "pencil_lead") {
                     //カウント
                     overlapped_unit_count++;
                 }
             }
             //座標
             Vec2 pos;
-            if (game_unit_list[i].type == U"pencil_lead"){
-                pos = { game_unit_list[i].x , Scene::Center().y };
+            if (GameUnitList[i].type == U"pencil_lead"){
+                pos = { GameUnitList[i].x , Scene::Center().y };
             } else {
-                pos = { game_unit_list[i].x , Scene::Center().y - overlapped_unit_count * texture_size / 8 };
+                pos = { GameUnitList[i].x , Scene::Center().y - overlapped_unit_count * texture_size / 8 };
             }
             //耐久値の割合
-            float damage_proportion = (float)game_unit_list[i].durability / get_game_unit_info(game_unit_list[i]).durability;
+            float damage_proportion = (float)GameUnitList[i].durability / GetGameUnitType(GameUnitList[i]).durability;
             //シルエット
             RenderTexture silhouette;
             //攻撃しているか
-            if (game_unit_list[i].cooldown > game_unit_info_list.at(game_unit_list[i].type.narrow()).cooldown / 5 * 3){
+            if (GameUnitList[i].cooldown > GameUnitTypeList.at(GameUnitList[i].type).cooldown / 5 * 3){
                 //攻撃テクスチャーで描画
-                get_game_unit_info(game_unit_list[i]).get_attack_texture(game_unit_list[i].is_friend).drawAt(pos);
-                silhouette = (game_unit_list[i].is_friend ? get_game_unit_info(game_unit_list[i]).friend_attack_mask_render_texture : get_game_unit_info(game_unit_list[i]).enemy_attack_mask_render_texture);
+                GetGameUnitType(GameUnitList[i]).getAttackingTexture(GameUnitList[i].isFriend).drawAt(pos);
+                silhouette = (GameUnitList[i].isFriend ? GetGameUnitType(GameUnitList[i]).friendAttackingMaskRenderTexture : GetGameUnitType(GameUnitList[i]).enemyAttackingMaskRenderTexture);
             }
             else {
                 //通常テクスチャーで描画
-                get_game_unit_info(game_unit_list[i]).get_normal_texture(game_unit_list[i].is_friend).drawAt(pos);
-                silhouette = (game_unit_list[i].is_friend ? get_game_unit_info(game_unit_list[i]).friend_normal_mask_render_texture : get_game_unit_info(game_unit_list[i]).enemy_normal_mask_render_texture);
+                GetGameUnitType(GameUnitList[i]).getNormalTexture(GameUnitList[i].isFriend).drawAt(pos);
+                silhouette = (GameUnitList[i].isFriend ? GetGameUnitType(GameUnitList[i]).friendNormalMaskRenderTexture : GetGameUnitType(GameUnitList[i]).enemyNormalMaskRenderTexture);
             }
             //割れ目の描画
             if (damage_proportion < 0.15){
@@ -495,17 +381,17 @@ public:
                 
             }
             //クリック時の処理
-            if (game_unit_list[i].is_friend and game_unit_list[i].type.narrow() != "pencil_lead"){
-                if (game_unit_list[i].collision_detection.leftClicked() and game_unit_list[i].is_friend) {
+            if (GameUnitList[i].isFriend and GameUnitList[i].type.narrow() != "pencil_lead"){
+                if (GameUnitList[i].collisionDetection.leftClicked() and GameUnitList[i].isFriend) {
                     //左クリック時に（味方なら）固定
-                    game_unit_list[i].is_fixed = true;
-                } else if(game_unit_list[i].collision_detection.rightClicked() and game_unit_list[i].is_friend){
+                    GameUnitList[i].is_fixed = true;
+                } else if(GameUnitList[i].collisionDetection.rightClicked() and GameUnitList[i].isFriend){
                     //右クリック時に（味方なら）固定解除
-                    game_unit_list[i].is_fixed = false;
+                    GameUnitList[i].is_fixed = false;
                 }
             }
             //当たり判定の図形の移動
-            game_unit_list[i].collision_detection.setPos(Arg::center(game_unit_list[i].x, Scene::Center().y - overlapped_unit_count * texture_size / 8));
+            GameUnitList[i].collisionDetection.setPos(Arg::center(GameUnitList[i].x, Scene::Center().y - overlapped_unit_count * texture_size / 8));
         }
         //敵を召喚する簡易ボタン
 #ifdef DEBUG
@@ -541,7 +427,7 @@ public:
             //画像の描画(* 0.4 = * 0.8 / 2)
             summon_button_list[i].texture.resized(texture_size * 0.8).drawAt(summon_button_list[i].x,Scene::Size().y - texture_size * 0.4);
             //ラベルの描画
-            sumbtn_label_font(Format(game_unit_info_list.at(summon_button_list[i].type.narrow()).cost) + U"円").drawAt(summon_button_list[i].x,Scene::Size().y - texture_size * 0.875);
+            sumbtn_label_font(Format(GameUnitTypeList[summon_button_list[i].type].cost) + U"円").drawAt(summon_button_list[i].x,Scene::Size().y - texture_size * 0.875);
             if (summon_button_list[i].background.mouseOver()) {
                 MouseOveredButton = summon_button_list[i].type;
             }
@@ -579,15 +465,15 @@ public:
         if (not (MouseOveredButton == U"")) {
             Rect{0, 0, Scene::Width(), 150}.draw(ColorF(Palette::Dimgray, 0.8)).drawFrame(2, 0, Palette::Black);
             DescriptionFont(GetStringValue(MouseOveredButton, U"description")).draw(texture_size + 30, 10);
-            game_unit_info_list.at(MouseOveredButton.narrow()).get_normal_texture(true).draw(14, 2);
+            GameUnitTypeList[MouseOveredButton].getNormalTexture(true).draw(14, 2);
             NameFont(GetStringValue(MouseOveredButton, U"ja_name")).draw(2, texture_size + 2);
         }
               
         //耐久力バーの描画
         if (winner == 0) {
             // hard coding
-            float friend_castle_damage_proportion = (float)game_unit_list[0].durability / 1200;
-            float enemy_castle_damage_proportion = (float)game_unit_list[1].durability / 1200;
+            float friend_castle_damage_proportion = (float)GameUnitList[0].durability / 1200;
+            float enemy_castle_damage_proportion = (float)GameUnitList[1].durability / 1200;
             Color friend_castle_bar_color;
             Color enemy_castle_bar_color;
             if (friend_castle_damage_proportion > 0.6 ){
@@ -617,38 +503,38 @@ public:
             //デバック情報の削除
             ClearPrint();
             //game_unitの行動処理
-            for (unsigned long int i = 0; i < game_unit_list.size(); i++) {
+            for (unsigned long int i = 0; i < GameUnitList.size(); i++) {
                 //クールダウンが終わったかの判定
-                if (game_unit_list[i].cooldown == 0 and (game_unit_list[i].knock_back == 0 or (game_unit_list[i].type.narrow() == "castle" or game_unit_list[i].type.narrow() == "pencil_sharpener" ))){
+                if (GameUnitList[i].cooldown == 0 and (GameUnitList[i].knock_back == 0 or (GameUnitList[i].type.narrow() == "castle" or GameUnitList[i].type.narrow() == "pencil_sharpener" ))){
                     //攻撃したかのフラグ
                     bool has_attacked = false;
-                    game_unit* target = nullptr;
+                    GameUnit* target = nullptr;
                     //攻撃するgame_unitの検索
-                    for (unsigned long int j = 0; j < game_unit_list.size(); j++) {
+                    for (unsigned long int j = 0; j < GameUnitList.size(); j++) {
                         //相手が敵で、攻撃範囲内にいるかを判別する
-                        if (( game_unit_list[i].is_friend
-                             ? not game_unit_list[j].is_friend and game_unit_list[j].x >= game_unit_list[i].x + get_game_unit_info(game_unit_list[i]).attack_range_begin and game_unit_list[j].x <= game_unit_list[i].x + get_game_unit_info(game_unit_list[i]).attack_range_end
-                             : game_unit_list[j].is_friend and game_unit_list[j].x >= game_unit_list[i].x - get_game_unit_info(game_unit_list[i]).attack_range_end and game_unit_list[j].x <= game_unit_list[i].x - get_game_unit_info(game_unit_list[i]).attack_range_begin ) and game_unit_list[j].type.narrow() != "pencil_lead"){
+                        if (( GameUnitList[i].isFriend
+                             ? not GameUnitList[j].isFriend and GameUnitList[j].x <= GameUnitList[i].x + GetGameUnitType(GameUnitList[i]).attackRange
+                             : GameUnitList[j].isFriend and GameUnitList[j].x >= GameUnitList[i].x - GetGameUnitType(GameUnitList[i]).attackRange ) and GameUnitList[j].type.narrow() != "pencil_lead"){
                             if (target == nullptr){
-                                target = &game_unit_list[j];
-                            } else if ( game_unit_list[i].is_friend ? game_unit_list[j].x < target->x : game_unit_list[j].x > target->x ){
-                                target = &game_unit_list[j];
+                                target = &GameUnitList[j];
+                            } else if ( GameUnitList[i].isFriend ? GameUnitList[j].x < target->x : GameUnitList[j].x > target->x ){
+                                target = &GameUnitList[j];
                             }
                         }
                     }
                     //ターゲットが見つかったのなら
                     if (target != nullptr){
                         //攻撃処理
-                        if (get_game_unit_info(game_unit_list[i]).feature == U"shot") {
+                        if (GetGameUnitType(GameUnitList[i]).feature == Features::gun) {
                             //シャー芯を召喚
-                            game_unit_list.push_back(game_unit(U"pencil_lead", game_unit_list[i].is_friend, game_unit_list[i].x + texture_size / 2));
+                            GameUnitList.push_back(GameUnit(GameUnitTypeList[U"pencil_lead"], GameUnitList[i].isFriend, GameUnitList[i].x + texture_size / 2));
                         } else {
-                            target->durability -= get_game_unit_info(game_unit_list[i]).attack_power;
+                            target->durability -= GetGameUnitType(GameUnitList[i]).attackPower;
                             //攻撃時の、種類ごとのユニークな処理
-                            if (game_unit_list[i].type == U"eraser") {
-                                game_unit_list[i].durability -= 5;
-                            } else if (game_unit_list[i].type == U"pencil_lead"){
-                                game_unit_list[i].durability = 0;
+                            if (GameUnitList[i].type == U"eraser") {
+                                GameUnitList[i].durability -= 5;
+                            } else if (GameUnitList[i].type == U"pencil_lead"){
+                                GameUnitList[i].durability = 0;
                                 //ノックバック
                                 target->knock_back = 10;
                             } else {
@@ -657,21 +543,21 @@ public:
                             }
                         }
                         //クールダウン
-                        game_unit_list[i].cooldown = get_game_unit_info(game_unit_list[i]).cooldown;
+                        GameUnitList[i].cooldown = GetGameUnitType(GameUnitList[i]).cooldown;
                         //攻撃したフラグを立てる
                         has_attacked = true;
                     }
                     //攻撃したかの判定
                     if (not has_attacked) {
-                        if (not game_unit_list[i].is_fixed){
+                        if (not GameUnitList[i].is_fixed){
                             //移動
                             //味方かの判定
-                            if (game_unit_list[i].is_friend){
+                            if (GameUnitList[i].isFriend){
                                 //正の方向に移動
-                                game_unit_list[i].x += get_game_unit_info(game_unit_list[i]).speed;
+                                GameUnitList[i].x += GetGameUnitType(GameUnitList[i]).speed;
                             } else{
                                 //負の方向に移動
-                                game_unit_list[i].x -= get_game_unit_info(game_unit_list[i]).speed;
+                                GameUnitList[i].x -= GetGameUnitType(GameUnitList[i]).speed;
                             }
                         }
                     } else {
@@ -680,28 +566,28 @@ public:
                     }
                     
                 } else {
-                    if (game_unit_list[i].knock_back == 0){
+                    if (GameUnitList[i].knock_back == 0){
                         //クールダウンのカウントを減らす
-                        game_unit_list[i].cooldown --;
+                        GameUnitList[i].cooldown --;
                     } else {
                         //ノックバックのカウントを減らし、後ろに弾き飛ばす
-                        game_unit_list[i].knock_back --;
-                        uint16 x_after_knockback = game_unit_list[i].x + (game_unit_list[i].is_friend ? -1 : 1);
-                        if (game_unit_list[i].type.narrow() != "castle" and game_unit_list[i].type.narrow() != "pencil_sharpener") {
-                            game_unit_list[i].x = x_after_knockback;
+                        GameUnitList[i].knock_back --;
+                        uint16 x_after_knockback = GameUnitList[i].x + (GameUnitList[i].isFriend ? -1 : 1);
+                        if (GameUnitList[i].type.narrow() != "castle" and GameUnitList[i].type.narrow() != "pencil_sharpener") {
+                            GameUnitList[i].x = x_after_knockback;
                         }
                     }
                 }
                 //破壊判定
-                for (long int i = game_unit_list.size() - 1; i >= 0;  i--) {
-                    if (game_unit_list[i].durability <= 0){
+                for (long int i = GameUnitList.size() - 1; i >= 0;  i--) {
+                    if (GameUnitList[i].durability <= 0){
                         //城が破壊された場合は、勝敗を記録し、終了エフェクトを表示する
-                        if (game_unit_list[i].type == U"castle") {
-                            winner = game_unit_list ? 1 : 2;
-                            effect.add<FinishEffect>(!game_unit_list[i].is_friend);
+                        if (GameUnitList[i].type == U"castle") {
+                            winner = GameUnitList ? 1 : 2;
+                            effect.add<FinishEffect>(!GameUnitList[i].isFriend);
                         }
                         //削除
-                        game_unit_list.erase(game_unit_list.begin() + i);
+                        GameUnitList.erase(GameUnitList.begin() + i);
                         
                     }
                 }
@@ -710,10 +596,10 @@ public:
             if (winner == 0){
                 //勢力の計算
                 double friend_power = 0, enemy_power = 0;
-                for (unsigned long int i = 0; i < game_unit_list.size(); i++){
-                    if (game_unit_list[i].type.narrow() != "castle" and game_unit_list[i].type.narrow() != "pencil_lead"){
+                for (unsigned long int i = 0; i < GameUnitList.size(); i++){
+                    if (GameUnitList[i].type.narrow() != "castle" and GameUnitList[i].type.narrow() != "pencil_lead"){
                         //強さは攻撃の強さと耐久力の合計
-                        (game_unit_list[i].is_friend ? friend_power : enemy_power) += (get_game_unit_info(game_unit_list[i]).general_attack_power + game_unit_list[i].durability);
+                        (GameUnitList[i].isFriend ? friend_power : enemy_power) += (GetGameUnitType(GameUnitList[i]).generalPower + GameUnitList[i].durability);
                     }
                 }
                 float PowerRatio;
@@ -728,7 +614,7 @@ public:
                     AIMode = round(Random()) + 1;
                     Logger << AIMode;
                 }
-                //召喚するgame_unitの決定
+                //召喚するユニットの決定
                 if (AIStep != 3) {
                     //勢力の割合に応じた分岐
                     if (PowerRatio < 0.5) {
