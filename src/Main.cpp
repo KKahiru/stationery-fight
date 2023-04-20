@@ -15,6 +15,11 @@ Type get_config_value(String type, String key){
 String GetStringValue (String type, String key) {
     return ConfigJson[U"ability_config"][type][key].getString();
 }
+
+uint16 GetXPos (const double& pos)
+{
+    return pos * Scene::Width();
+}
 //難易度
 int difficult_level = 2;
 //シーンマネージャーをAppに割り当てる
@@ -170,27 +175,6 @@ class DifficultySetting : public App::Scene {
 // ゲームシーン
 class GameScene : public App::Scene
 {
-    //プレイヤーの情報を格納する構造体
-    struct player_info{
-        uint16 money = 0;
-        uint16 money_level = 0;
-        uint16 game_unit_power;
-    };
-    //プレイヤーと敵の情報生成
-    player_info player;
-    player_info enemy;
-    //ステージ上のgame_unitのリスト
-    Array<GameUnit> GameUnitList;
-    //game_unitを召喚する関数
-    bool summon_game_unit(String type, bool is_friend){
-        if ((is_friend ? player.money : enemy.money) >= get_config_value<uint16>(type, U"cost")){
-            GameUnitList.push_back(GameUnit(GameUnitTypeList[type], is_friend));
-            (is_friend ? player.money : enemy.money) -= get_config_value<uint16>(type, U"cost");
-        } else {
-            return false;
-        }
-        return true;
-    }
     //召喚ボタンの情報を格納する構造体
     struct summon_button{
         summon_button(String type, uint16 count){
@@ -208,34 +192,9 @@ class GameScene : public App::Scene
         Rect background;
         
     };
-    //ゲーム終了時のエフェクト
-    struct FinishEffect : IEffect
-    {
-        //ゲーム終了時のエフェクトのフォント
-        Font finish_font{120};
-        bool is_player_won;
-        
-        // このコンストラクタ引数が、Effect::add<FinishEffect>() の引数になる
-        explicit FinishEffect(const bool input)
-        : is_player_won{input}{}
-        
-        bool update(double t) override
-        {
-            //描画
-            finish_font(is_player_won ? U"You Win!!" : U"You Lose...").drawAt(Scene::Center(),is_player_won ? ColorF{0.9, 0.9, 0} :  ColorF{0, 0.1, 0.9});
-            // 3 秒未満なら継続
-            return (t < 3.0);
-        }
-    };
-    //GameUnitTypeの連装配列
-    HashTable<String, GameUnitType> GameUnitTypeList = {};
-    //GameUnitからGameUnitTypeを取得する関数
-    GameUnitType GetGameUnitType(const GameUnit& target){
-        return GameUnitTypeList.at(target.type);
-    }
     // 蓄積された時間（秒）
-    double action_accumulator = 0.0;
-    double income_accumulator = 0.0;
+    double actionAccumulator = 0.0;
+    double incomeAccumulator = 0.0;
     //ひび割れ
     TextureRegion crack[3] = { Texture{ Resource(U"resource/texture/crack/crack-1.png"), TextureDesc::Mipped }.resized(texture_size),
         Texture{ Resource(U"resource/texture/crack/crack-2.png"), TextureDesc::Mipped }.resized(texture_size),
@@ -250,8 +209,6 @@ class GameScene : public App::Scene
     const Audio BGM{Audio::Stream, Resource(U"resource/sound/bgm.mp3"), Loop::Yes};
     //エフェクト
     Effect effect;
-    //勝敗を記録する変数
-    uint8 winner = 0;
     //マスク用のシェーダー
     PixelShader mask_shader;
     //召喚ボタンのリスト
@@ -267,30 +224,23 @@ class GameScene : public App::Scene
     //解説のフォント
     Font DescriptionFont{25};
     Font NameFont{20};
+    
+    GameState state;
+    
+    WeakAI AI;
+    
+    Array<GameUnit>& GameUnitList = state.GameUnitList;
+    HashTable<String, GameUnitType>& GameUnitTypeList = state.GameUnitTypeList;
+    
     //勝敗決定後の待機時間
     float waiting_time = 0;
-    //敵AIの変数
-    //敵AIの攻撃のモード
-    uint8 AIMode = 0;
-    //敵AIの進行度
-    uint16 AIStep = 0;
-    //敵AIが召喚するターゲット
-    String AITarget = U"";
-    //AIの貯金
-    uint16 AISavingMoney = 0;
     //「1ティック前に」資金力ボタンが押せたか
     bool WasMoneyButtonAvilable = false;
-    void AISaveMoney(){
-        if (AISavingMoney < (AIStep + 1) * 25 * Math::Pow(2, enemy.money_level) ) {
-            AISavingMoney += enemy.money;
-            enemy.money = 0;
-        }
-        return;
-    }
 public:
     // コンストラクタ（必ず実装）
     GameScene(const InitData& init)
-    : IScene{ init }
+        : IScene{ init },
+        state(ConfigJson)
     {
         Scene::SetBackground(Palette::Lightskyblue);
         mask_shader = HLSL{ Resource(U"resource/shader/hlsl/multi_texture_mask.hlsl"), U"PS" }
@@ -298,28 +248,10 @@ public:
         if (not mask_shader) {
             throw Error{U"Error! Failed to load a shader file."};
         }
-        //召喚ボタン・ユニットの情報の登録
-        for( unsigned long int i=0; i <  ConfigJson[U"all_types"].size(); i++) {
-            String type = ConfigJson[U"all_types"][i].getString();
-            JSON unit = ConfigJson[U"ability_config"][type];
-            GameUnitTypeList.emplace(type, GameUnitType(type,
-                                                        FeaturesTable[unit[U"feature"].get<String>()],
-                                                        unit[U"durability"].get<uint16>(),
-                                                        unit[U"attack_power"].get<uint16>(),
-                                                        unit[U"attack_range_end"].get<uint16>(),
-                                                        unit[U"cooldown"].get<uint16>(),
-                                                        unit[U"speed"].get<uint16>(),
-                                                        unit[U"cost"].get<uint16>(),
-                                                        unit[U"ja_name"].get<String>(),
-                                                        unit[U"description"].get<String>()
-                                                        ));
-        };
+        
         for( unsigned long int i=0; i <  ConfigJson[U"available_types"].size(); i++) {
             summon_button_list.push_back(summon_button(ConfigJson[U"available_types"][i].getString(), i));
         };
-        //城を造る
-        GameUnitList.push_back(GameUnit(GameUnitTypeList[U"castle"], true, 40));
-        GameUnitList.push_back(GameUnit(GameUnitTypeList[U"castle"], false, Scene::Width() - 40));
         BGM.play();
     }
     
@@ -327,14 +259,17 @@ public:
     void update() override
     {
         //蓄積された秒数の記録
-        action_accumulator += Scene::DeltaTime();
-        income_accumulator += Scene::DeltaTime();
+        actionAccumulator += Scene::DeltaTime();
+        incomeAccumulator += Scene::DeltaTime();
         //game_unitの描画・クリック時の処理
         for (unsigned long int i = 0; i < GameUnitList.size(); i++) {
             //自分の前に重なっているgame_unitのカウント数
-            int overlapped_unit_count = 0;
+            size_t overlapped_unit_count = 0;
             for (long int j = 0; j < distance(GameUnitList.begin(), GameUnitList.begin() + i); j++){
-                if (GameUnitList[j].x < GameUnitList[i].x + texture_size/4*3 and GameUnitList[j].x > GameUnitList[i].x - texture_size/4*3 and GameUnitList[j].type.narrow() != "castle" and GameUnitList[j].type.narrow() != "pencil_lead") {
+                if (GetXPos(GameUnitList[j].pos) < GetXPos(GameUnitList[i].pos) + texture_size/4*3
+                    and GetXPos(GameUnitList[j].pos) > GetXPos(GameUnitList[i].pos) - texture_size/4*3
+                    and GameUnitList[j].type != U"castle"
+                    and GameUnitList[j].type != U"pencil_lead") {
                     //カウント
                     overlapped_unit_count++;
                 }
@@ -342,24 +277,24 @@ public:
             //座標
             Vec2 pos;
             if (GameUnitList[i].type == U"pencil_lead"){
-                pos = { GameUnitList[i].x , Scene::Center().y };
+                pos = { GetXPos(GameUnitList[i].pos) , Scene::Center().y };
             } else {
-                pos = { GameUnitList[i].x , Scene::Center().y - overlapped_unit_count * texture_size / 8 };
+                pos = { GetXPos(GameUnitList[i].pos) , Scene::Center().y - overlapped_unit_count * texture_size / 8 };
             }
             //耐久値の割合
-            float damage_proportion = (float)GameUnitList[i].durability / GetGameUnitType(GameUnitList[i]).durability;
+            float damage_proportion = (float)GameUnitList[i].durability / state.getGameUnitType(GameUnitList[i]).durability;
             //シルエット
             RenderTexture silhouette;
             //攻撃しているか
             if (GameUnitList[i].cooldown > GameUnitTypeList.at(GameUnitList[i].type).cooldown / 5 * 3){
                 //攻撃テクスチャーで描画
-                GetGameUnitType(GameUnitList[i]).getAttackingTexture(GameUnitList[i].isFriend).drawAt(pos);
-                silhouette = (GameUnitList[i].isFriend ? GetGameUnitType(GameUnitList[i]).friendAttackingMaskRenderTexture : GetGameUnitType(GameUnitList[i]).enemyAttackingMaskRenderTexture);
+                state.getGameUnitType(GameUnitList[i]).getAttackingTexture(GameUnitList[i].isFriend).drawAt(pos);
+                silhouette = (GameUnitList[i].isFriend ? state.getGameUnitType(GameUnitList[i]).friendAttackingMaskRenderTexture : state.getGameUnitType(GameUnitList[i]).enemyAttackingMaskRenderTexture);
             }
             else {
                 //通常テクスチャーで描画
-                GetGameUnitType(GameUnitList[i]).getNormalTexture(GameUnitList[i].isFriend).drawAt(pos);
-                silhouette = (GameUnitList[i].isFriend ? GetGameUnitType(GameUnitList[i]).friendNormalMaskRenderTexture : GetGameUnitType(GameUnitList[i]).enemyNormalMaskRenderTexture);
+                state.getGameUnitType(GameUnitList[i]).getNormalTexture(GameUnitList[i].isFriend).drawAt(pos);
+                silhouette = (GameUnitList[i].isFriend ? state.getGameUnitType(GameUnitList[i]).friendNormalMaskRenderTexture : state.getGameUnitType(GameUnitList[i]).enemyNormalMaskRenderTexture);
             }
             //割れ目の描画
             if (damage_proportion < 0.15){
@@ -381,32 +316,32 @@ public:
                 
             }
             //クリック時の処理
-            if (GameUnitList[i].isFriend and GameUnitList[i].type.narrow() != "pencil_lead"){
+            if (GameUnitList[i].isFriend and GameUnitList[i].type != U"pencil_lead"){
                 if (GameUnitList[i].collisionDetection.leftClicked() and GameUnitList[i].isFriend) {
                     //左クリック時に（味方なら）固定
-                    GameUnitList[i].is_fixed = true;
+                    GameUnitList[i].isFixed = true;
                 } else if(GameUnitList[i].collisionDetection.rightClicked() and GameUnitList[i].isFriend){
                     //右クリック時に（味方なら）固定解除
-                    GameUnitList[i].is_fixed = false;
+                    GameUnitList[i].isFixed = false;
                 }
             }
             //当たり判定の図形の移動
-            GameUnitList[i].collisionDetection.setPos(Arg::center(GameUnitList[i].x, Scene::Center().y - overlapped_unit_count * texture_size / 8));
+            GameUnitList[i].collisionDetection.setPos(Arg::center(GetXPos(GameUnitList[i].pos), Scene::Center().y - overlapped_unit_count * texture_size / 8));
         }
         //敵を召喚する簡易ボタン
 #ifdef DEBUG
         if (KeyShift.pressed()) {
                 if (SimpleGUI::Button(U"敵鉛筆召喚", Vec2{ 0, 100 }))
             {
-                summon_game_unit(U"pencil",false);
+                state.summonGameUnit(GameUnitTypeList[U"pencil"],false);
             }
             if (SimpleGUI::Button(U"敵消しゴム召喚", Vec2{ 150, 100 }))
             {
-                summon_game_unit(U"eraser",false);
+                state.summonGameUnit(GameUnitTypeList[U"eraser"],false);
             }
             if (SimpleGUI::Button(U"敵三角定規召喚", Vec2{ 350, 100 }))
             {
-                summon_game_unit(U"triangle",false);
+                state.summonGameUnit(GameUnitTypeList[U"triangle"],false);
             }
         }
 #endif
@@ -423,7 +358,7 @@ public:
         //召喚ボタンの描画
         for (unsigned long int i = 0; i < summon_button_list.size(); i++){
             //背景と枠線の描画
-            summon_button_list[i].background.draw(get_config_value<int>(summon_button_list[i].type, U"cost") > player.money ? ColorF{ 0.4, 0.4, 0.4 } : summon_button_list[i].background.mouseOver() ? ColorF{ 0.5, 0.5, 0.5 } : ColorF{ 0.7, 0.7, 0.7 }).drawFrame(3, 0, ColorF{ 0.3, 0.3, 0.3 });
+            summon_button_list[i].background.draw(get_config_value<int>(summon_button_list[i].type, U"cost") > state.FriendCamp.money ? ColorF{ 0.4, 0.4, 0.4 } : summon_button_list[i].background.mouseOver() ? ColorF{ 0.5, 0.5, 0.5 } : ColorF{ 0.7, 0.7, 0.7 }).drawFrame(3, 0, ColorF{ 0.3, 0.3, 0.3 });
             //画像の描画(* 0.4 = * 0.8 / 2)
             summon_button_list[i].texture.resized(texture_size * 0.8).drawAt(summon_button_list[i].x,Scene::Size().y - texture_size * 0.4);
             //ラベルの描画
@@ -434,21 +369,21 @@ public:
             //ボタンがクリックされたら
             if (summon_button_list[i].background.leftClicked()) {
                 //条件式を評価することでgame_unitを召喚する
-                if (summon_game_unit(summon_button_list[i].type, true)){
+                if (state.summonGameUnit(GameUnitTypeList[summon_button_list[i].type], true)){
                     SummonSound.playOneShot();
                 }
             }
         }
         
         //資金力強化ボタン
-        money_button.draw(120 * Math::Pow(2, player.money_level) > player.money ? static_cast<HSV>(Palette::Darkgoldenrod) : money_button.mouseOver() ? static_cast<HSV>(Palette::Goldenrod) : HSV{ 40, 0.8, 1.0 }).drawFrame(3, 0, Palette::Goldenrod);
-        money_label_font( U"資金力強化に\n投資する\n" + Format(120 * Math::Pow(2, player.money_level)) + U"円" ).drawAt(Scene::Width() - texture_size / 2, Scene::Height() - texture_size * 0.5);
-        if (money_button.leftClicked() and player.money >= 120 * Math::Pow(2, player.money_level)) {
-            player.money -=  120 * Math::Pow(2, player.money_level);
-            player.money_level ++;
+        money_button.draw(120 * Math::Pow(2, state.FriendCamp.profitLevel) > state.FriendCamp.money ? static_cast<HSV>(Palette::Darkgoldenrod) : money_button.mouseOver() ? static_cast<HSV>(Palette::Goldenrod) : HSV{ 40, 0.8, 1.0 }).drawFrame(3, 0, Palette::Goldenrod);
+        money_label_font( U"資金力強化に\n投資する\n" + Format(120 * Math::Pow(2, state.FriendCamp.profitLevel)) + U"円" ).drawAt(Scene::Width() - texture_size / 2, Scene::Height() - texture_size * 0.5);
+        if (money_button.leftClicked() and state.FriendCamp.money >= 120 * Math::Pow(2, state.FriendCamp.profitLevel)) {
+            state.FriendCamp.money -=  120 * Math::Pow(2, state.FriendCamp.profitLevel);
+            state.FriendCamp.profitLevel ++;
             SummonSound.playOneShot();
         }
-        if (player.money >= 120 * Math::Pow(2, player.money_level)) {
+        if (state.FriendCamp.money >= 120 * Math::Pow(2, state.FriendCamp.profitLevel)) {
             if (not WasMoneyButtonAvilable) {
                 MoneyAvailable.playOneShot();
                 WasMoneyButtonAvilable = true;
@@ -459,7 +394,7 @@ public:
         }
         
         //資金残高表記
-        money_info_label_font(U"手持ちのお金: " + Format(player.money) + U"円").draw(0, Scene::Height() - texture_size - 40);
+        money_info_label_font(U"手持ちのお金: " + Format(state.FriendCamp.money) + U"円").draw(0, Scene::Height() - texture_size - 40);
         
         //説明欄
         if (not (MouseOveredButton == U"")) {
@@ -470,8 +405,8 @@ public:
         }
               
         //耐久力バーの描画
-        if (winner == 0) {
-            // hard coding
+        if (state.winner == 0) {
+            // TODO: remove hard coding
             float friend_castle_damage_proportion = (float)GameUnitList[0].durability / 1200;
             float enemy_castle_damage_proportion = (float)GameUnitList[1].durability / 1200;
             Color friend_castle_bar_color;
@@ -498,238 +433,41 @@ public:
             Line{Scene::Width() - 10 - 100 * enemy_castle_damage_proportion, Scene::Center().y - 100, Scene::Width() - 10, Scene::Center().y - 100}.draw(10, enemy_castle_bar_color);
         }
         
-        //game_unitの行動処理（0.1秒刻み）
-        while ( 0.1 <= action_accumulator) {
+        //game_unitの行動処理（0.05秒刻み）
+        while ( 0.05 <= actionAccumulator) {
             //デバック情報の削除
             ClearPrint();
-            //game_unitの行動処理
-            for (unsigned long int i = 0; i < GameUnitList.size(); i++) {
-                //クールダウンが終わったかの判定
-                if (GameUnitList[i].cooldown == 0 and (GameUnitList[i].knock_back == 0 or (GameUnitList[i].type.narrow() == "castle" or GameUnitList[i].type.narrow() == "pencil_sharpener" ))){
-                    //攻撃したかのフラグ
-                    bool has_attacked = false;
-                    GameUnit* target = nullptr;
-                    //攻撃するgame_unitの検索
-                    for (unsigned long int j = 0; j < GameUnitList.size(); j++) {
-                        //相手が敵で、攻撃範囲内にいるかを判別する
-                        if (( GameUnitList[i].isFriend
-                             ? not GameUnitList[j].isFriend and GameUnitList[j].x <= GameUnitList[i].x + GetGameUnitType(GameUnitList[i]).attackRange
-                             : GameUnitList[j].isFriend and GameUnitList[j].x >= GameUnitList[i].x - GetGameUnitType(GameUnitList[i]).attackRange ) and GameUnitList[j].type.narrow() != "pencil_lead"){
-                            if (target == nullptr){
-                                target = &GameUnitList[j];
-                            } else if ( GameUnitList[i].isFriend ? GameUnitList[j].x < target->x : GameUnitList[j].x > target->x ){
-                                target = &GameUnitList[j];
-                            }
-                        }
-                    }
-                    //ターゲットが見つかったのなら
-                    if (target != nullptr){
-                        //攻撃処理
-                        if (GetGameUnitType(GameUnitList[i]).feature == Features::gun) {
-                            //シャー芯を召喚
-                            GameUnitList.push_back(GameUnit(GameUnitTypeList[U"pencil_lead"], GameUnitList[i].isFriend, GameUnitList[i].x + texture_size / 2));
-                        } else {
-                            target->durability -= GetGameUnitType(GameUnitList[i]).attackPower;
-                            //攻撃時の、種類ごとのユニークな処理
-                            if (GameUnitList[i].type == U"eraser") {
-                                GameUnitList[i].durability -= 5;
-                            } else if (GameUnitList[i].type == U"pencil_lead"){
-                                GameUnitList[i].durability = 0;
-                                //ノックバック
-                                target->knock_back = 10;
-                            } else {
-                                //ノックバック
-                                target->knock_back = 1;
-                            }
-                        }
-                        //クールダウン
-                        GameUnitList[i].cooldown = GetGameUnitType(GameUnitList[i]).cooldown;
-                        //攻撃したフラグを立てる
-                        has_attacked = true;
-                    }
-                    //攻撃したかの判定
-                    if (not has_attacked) {
-                        if (not GameUnitList[i].is_fixed){
-                            //移動
-                            //味方かの判定
-                            if (GameUnitList[i].isFriend){
-                                //正の方向に移動
-                                GameUnitList[i].x += GetGameUnitType(GameUnitList[i]).speed;
-                            } else{
-                                //負の方向に移動
-                                GameUnitList[i].x -= GetGameUnitType(GameUnitList[i]).speed;
-                            }
-                        }
-                    } else {
-                        //攻撃の効果音
-                        HitPop.playOneShot();
-                    }
-                    
-                } else {
-                    if (GameUnitList[i].knock_back == 0){
-                        //クールダウンのカウントを減らす
-                        GameUnitList[i].cooldown --;
-                    } else {
-                        //ノックバックのカウントを減らし、後ろに弾き飛ばす
-                        GameUnitList[i].knock_back --;
-                        uint16 x_after_knockback = GameUnitList[i].x + (GameUnitList[i].isFriend ? -1 : 1);
-                        if (GameUnitList[i].type.narrow() != "castle" and GameUnitList[i].type.narrow() != "pencil_sharpener") {
-                            GameUnitList[i].x = x_after_knockback;
-                        }
-                    }
-                }
-                //破壊判定
-                for (long int i = GameUnitList.size() - 1; i >= 0;  i--) {
-                    if (GameUnitList[i].durability <= 0){
-                        //城が破壊された場合は、勝敗を記録し、終了エフェクトを表示する
-                        if (GameUnitList[i].type == U"castle") {
-                            winner = GameUnitList ? 1 : 2;
-                            effect.add<FinishEffect>(!GameUnitList[i].isFriend);
-                        }
-                        //削除
-                        GameUnitList.erase(GameUnitList.begin() + i);
-                        
-                    }
-                }
-            }
+            state.actionProcess(HitPop, effect);
             //AI
-            if (winner == 0){
-                //勢力の計算
-                double friend_power = 0, enemy_power = 0;
-                for (unsigned long int i = 0; i < GameUnitList.size(); i++){
-                    if (GameUnitList[i].type.narrow() != "castle" and GameUnitList[i].type.narrow() != "pencil_lead"){
-                        //強さは攻撃の強さと耐久力の合計
-                        (GameUnitList[i].isFriend ? friend_power : enemy_power) += (GetGameUnitType(GameUnitList[i]).generalPower + GameUnitList[i].durability);
-                    }
-                }
-                float PowerRatio;
-                //0除算の防止
-                if (friend_power == 0) {
-                    PowerRatio = enemy_power == 0 ? 1 : 2;
-                } else {
-                    PowerRatio = enemy_power / friend_power;
-                }
-                //下準備
-                if (AIMode == 0){
-                    AIMode = round(Random()) + 1;
-                    Logger << AIMode;
-                }
-                //召喚するユニットの決定
-                if (AIStep != 3) {
-                    //勢力の割合に応じた分岐
-                    if (PowerRatio < 0.5) {
-                        switch (enemy.money_level) {
-                            case 0:
-                            case 1:
-                                AITarget = U"eraser";
-                                break;
-                            case 2:
-                            case 3:
-                                AITarget = U"triangle";
-                                break;
-                            case 4:
-                            default:
-                                if (AIStep == 0){
-                                    AITarget = U"pencil_sharpener";
-                                } else {
-                                    AITarget = U"mechanical_pencil";
-                                }
-                                break;
-                        }
-                    } else if (PowerRatio < 1.25){
-                        switch (enemy.money_level) {
-                            case 0:
-                            case 1:
-                                AISaveMoney();
-                                AITarget = U"pencil";
-                                break;
-                            case 2:
-                            case 3:
-                                AISaveMoney();
-                                AITarget = U"triangle";
-                                break;
-                            case 4:
-                            default:
-                                AISaveMoney();
-                                if (AIMode == 1) {
-                                    //遠距離の召喚
-                                    AITarget = (AIStep == 0) ? U"mechanical_pencil" : U"triangle";
-                                } else {
-                                    AITarget = U"triangle";
-                                }
-                                break;
-                            }
-                } else {
-                        //攻めプロセス
-                        switch (enemy.money_level) {
-                            case 0:
-                            case 1:
-                                AISaveMoney();
-                                break;
-                            case 2:
-                            case 3:
-                                AISaveMoney();
-                                AITarget=U"triangle";
-                                break;
-                            case 4:
-                            default:
-                                AISaveMoney();
-                                if (AIStep == 0){
-                                    AITarget=U"pencil_sharpener";
-                                } else {
-                                    AITarget=U"mechanical_pencil";
-                                }
-                                break;
-                        }
-                    }
-                }
-                if (AIStep == 3) {
-                    enemy.money += AISavingMoney;
-                    AISavingMoney = 0;
-                    if (120 * Math::Pow(2, enemy.money_level) <= enemy.money) {
-                        enemy.money -= 120 * Math::Pow(2, enemy.money_level);
-                        enemy.money_level ++;
-                        AIStep = 0;
-                        AIMode = 0;
-                    }
-                } else /*召喚を試みる*/if (AITarget.narrow() != "" and summon_game_unit(AITarget, false)) {
-                    AIStep ++;
-                    AITarget = U"";
-                }
-#ifdef DEBUG
-                if (KeyShift.pressed()) {
-                    Print << U"Mode: " << AIMode;
-                    Print << U"Target: " << (AITarget == U"" ? U"資金力強化" : AITarget);
-                    Print << U"power" + Format(friend_power) + U"/" + Format(enemy_power);
-                    Print << U"money: " + Format(player.money) + U" / " + Format(enemy.money);
-                }
-#endif
+            if (state.winner == 0)
+            {
+                AI.judge(state);
             }
             //蓄積された秒数を減らす
-            action_accumulator -= 0.1;
+            actionAccumulator -= 0.1;
         }
         //各陣営の収入処理
-        while (0.5 <= income_accumulator) {
+        while (0.2 <= incomeAccumulator) {
             //難易度に合わせて資金を増加させる
             switch (difficult_level) {
                 case 1:
-                    player.money += 10 * Math::Pow(1.5, player.money_level);
-                    enemy.money += 7 * Math::Pow(1.5, enemy.money_level);
+                    state.FriendCamp.money += 10 * Math::Pow(1.5, state.FriendCamp.profitLevel);
+                    state.EnemyCamp.money += 7 * Math::Pow(1.5, state.EnemyCamp.profitLevel);
                     break;
                 default:
                 case 2:
-                    player.money += 10 * Math::Pow(1.5, player.money_level);
-                    enemy.money += 12 * Math::Pow(1.5, enemy.money_level);
+                    state.FriendCamp.money += 10 * Math::Pow(1.5, state.FriendCamp.profitLevel);
+                    state.EnemyCamp.money += 12 * Math::Pow(1.5, state.EnemyCamp.profitLevel);
                     break;
                 case 3:
-                    player.money += 7 * Math::Pow(1.5, player.money_level);
-                    enemy.money += 12 * Math::Pow(1.5, enemy.money_level);
+                    state.FriendCamp.money += 7 * Math::Pow(1.5, state.FriendCamp.profitLevel);
+                    state.EnemyCamp.money += 12 * Math::Pow(1.5, state.EnemyCamp.profitLevel);
                     break;
             }
-            income_accumulator -= 0.5;
+            incomeAccumulator -= 0.5;
             
         }
-        waiting_time += winner != 0 ? Scene::DeltaTime() : 0;
+        waiting_time += state.winner != 0 ? Scene::DeltaTime() : 0;
         if (waiting_time >= 4) {
             changeScene(U"Title");
         }

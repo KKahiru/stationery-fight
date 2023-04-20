@@ -15,8 +15,11 @@
 
 namespace stfi {
 #ifndef HEADLESS
-const uint8 textureSize = 120;
+constexpr uint8 textureSize = 120;
 #endif
+
+constexpr double knockbackAmount = 0.005;
+
 enum class Features
 {
     normal,
@@ -45,13 +48,13 @@ public:
     // 攻撃力
     uint16 attackPower;
     // 攻撃範囲
-    uint16 attackRange;
+    double attackRange;
     //総合的な攻撃の強さ
     uint16 generalPower;
     // クールダウン
     uint16 cooldown;
     // 移動速度
-    uint16 speed;
+    double speed;
     // コスト
     uint16 cost;
     // ローカライズ済みの名前
@@ -86,35 +89,98 @@ public:
                  Features feature,
                  uint16 durability,
                  uint16 attackPower,
-                 uint16 attackRange,
+                 double attackRange,
                  uint16 cooldown,
-                 uint16 speed,
+                 double speed,
                  uint16 cost,
                  String localizeName,
                  String description);
 };
-//game_unitのクラス
+//ユニットのクラス
 class GameUnit{
 public:
     //味方かのbool値
     bool isFriend;
-    //game_unitのタイプ
+    //ユニットのタイプ
     String type;
-    //x座標
-    uint16 x;
+    // 位置
+    double pos;
     //耐久値
     int16 durability;
     //クールダウン
     uint16 cooldown = 0;
     //ノックバック
-    uint16 knock_back = 0;
+    uint16 knockBack = 0;
     //固定されているか
-    bool is_fixed = false;
+    bool isFixed = false;
     //コンストラクター
-    GameUnit(GameUnitType type, bool is_friend);
-    GameUnit(GameUnitType type, bool is_friend, uint16 x);
+    GameUnit(GameUnitType type, bool isFriend);
+    GameUnit(GameUnitType type, bool isFriend, double pos);
     //当たり判定
     Rect collisionDetection{ textureSize };
+};
+//プレイヤーの情報を格納する構造体
+struct CampInfo
+{
+    uint16 money = 0;
+    uint16 profitLevel = 0;
+    uint16 gameUnitPower;
+};
+
+# ifndef HEADLESS
+//ゲーム終了時のエフェクト
+struct FinishEffect : IEffect
+{
+    //ゲーム終了時のエフェクトのフォント
+    Font finishFont{ 120 };
+    bool isFriendWinner;
+
+    // このコンストラクタ引数が、Effect::add<FinishEffect>() の引数になる
+    explicit FinishEffect(const bool input);
+    
+    bool update(double t) override;
+};
+# endif
+
+class GameState
+{
+public:
+# ifndef HEADLESS
+    GameState(JSON ConfigJson);
+# endif
+    // GameUnitTypeの連装配列
+    HashTable<String, GameUnitType> GameUnitTypeList = {};
+    // GameUnitからGameUnitTypeを取得する関数
+    GameUnitType getGameUnitType(const GameUnit& target);
+    // プレイヤーと敵の情報生成
+    CampInfo FriendCamp, EnemyCamp;
+    // ステージ上のユニットのリスト
+    Array<GameUnit> GameUnitList;
+    // ユニットを召喚する関数
+    bool summonGameUnit(GameUnitType type, bool isFriend);
+    // 勝敗情報
+    uint8 winner = 0;
+    // 行動処理
+# ifdef HEADLESS
+    void actionProcess();
+# else
+    void actionProcess(const Audio& HitPop, Effect& effect);
+# endif
+};
+class WeakAI
+{
+    //敵AIの攻撃のモード
+    uint8 AIMode = 0;
+    //敵AIの進行度
+    uint16 AIStep = 0;
+    //敵AIが召喚するターゲット
+    String AITarget = U"";
+    //AIの貯金
+    uint16 AISavingMoney = 0;
+    void saveMoney(CampInfo& info);
+public:
+    // 判断する関数
+    void judge(GameState& state);
 };
 
 }

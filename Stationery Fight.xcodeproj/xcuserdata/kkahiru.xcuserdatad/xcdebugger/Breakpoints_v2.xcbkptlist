@@ -7,16 +7,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "8455DA61-315D-4106-94BD-FC47BDC086F2"
+            uuid = "1D52AE12-5177-42A0-A9EB-3D8E231B22CB"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "src/Main.cpp"
+            filePath = "src/logic.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "356"
-            endingLineNumber = "356"
-            landmarkName = "update()"
+            startingLineNumber = "347"
+            endingLineNumber = "347"
+            landmarkName = "GameState::actionProcess(HitPop, effect)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

@@ -4,12 +4,12 @@
     "ability_config":{
         "pencil": {
             "ja_name": "\u925b\u7b46",
-            "description": "なんの変哲もない鉛筆です。割とバランス型です。",
+            "description": "「なんの変哲もない」鉛筆です。\n性能的にはバランス型です。",
             "feature": "normal",
             "durability": 100,
             "attack_power": 20,
             "cooldown": 20,
-            "speed": 3,
+            "speed": 6,
             "attack_range_begin": 0,
             "attack_range_end": 100,
             "cost": 100
@@ -21,19 +21,19 @@
             "durability": 50,
             "attack_power": 40,
             "cooldown": 10,
-            "speed": 5,
+            "speed": 10,
             "attack_range_begin": 0,
             "attack_range_end": 60,
             "cost": 70
         },
         "triangle": {
             "ja_name": "\u4e09\u89d2\u5b9a\u898f",
-            "description": "鉛筆を圧倒する耐久力と攻撃力を持っていて、\n鉛筆が相手なら1つ出すだけでかなり\n持ちこたえることができます。",
+            "description": "鉛筆を圧倒する耐久力と攻撃力を持っていて、\n鉛筆が相手なら余裕で勝てます。",
             "feature": "long_range",
             "durability": 175,
             "attack_power": 60,
             "cooldown": 25,
-            "speed": 4,
+            "speed": 8,
             "attack_range_begin": 0,
             "attack_range_end": 250,
             "cost": 400
@@ -45,26 +45,26 @@
             "durability": 175,
             "attack_power": 75,
             "cooldown": 40,
-            "speed": 4,
+            "speed": 8,
             "attack_range_begin": 0,
             "attack_range_end": 600,
             "cost": 600
         },
         "pencil_lead": {
             "ja_name": "\u30b7\u30e3\u30fc\u82af",
-            "description": "シャーペンが放つ矢？です。\nこの説明文が表示されることはないと思います。",
+            "description": "シャーペンが放つ矢のようなシャー芯です。",
             "feature": "arrow",
             "durability": 9999,
             "attack_power": 75,
             "cooldown": 65535,
-            "speed": 60,
+            "speed": 100,
             "attack_range_begin": 0,
             "attack_range_end": 60,
             "cost": 65535
         },
         "pencil_sharpener": {
             "ja_name": "\u925b\u7b46\u524a\u308a",
-            "description": "耐久力がとても高く、盾となる文房具です。移動速度が遅いため、\n固定機能を使ってなるべく鉛筆削りを追い越さないように\nした方が良いかもしれません。",
+            "description": "耐久力がとても高く、盾となる文房具です。\nただし移動速度が遅く、攻撃も弱いです。",
             "feature": "normal",
             "durability": 900,
             "attack_power": 30,
@@ -76,15 +76,15 @@
         },
         "compass": {
             "ja_name": "\u30b3\u30f3\u30d1\u30b9",
-            "description": "あらゆる面で最強の文房具です。",
+            "description": "あらゆる面で最強の近接攻撃型文房具です。",
             "feature": "long_range",
-            "durability": 250,
+            "durability": 350,
             "attack_power": 70,
-            "cooldown": 8,
+            "cooldown": 10,
             "speed": 5,
             "attack_range_begin": 0,
             "attack_range_end": 250,
-            "cost": 1000
+            "cost": 800
         },
         "castle": {
             "ja_name": "\u57ce",
