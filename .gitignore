@@ -1,9 +1,14 @@
 
 .DS_Store
+# Project files
+.vs
+Stationery Fight.xcodeproj/project.xcworkspace
+# macOS build files
 App/Stationery Fight.app
 App/Stationery Fight.app.dSYM
+# Windows build files
 Intermediate
 App/Stationery-Fight(*).exe
 App/AS_DEBUG
-.vs
-Stationery Fight.xcodeproj/project.xcworkspace
+# Headless build files
+build

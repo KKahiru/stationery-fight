@@ -8,7 +8,7 @@
 # pragma once
 
 # ifdef HEADLESS
-# include "types.hpp"
+# include "define.hpp"
 # else
 # include <Siv3D.hpp>
 # endif
@@ -117,7 +117,9 @@ public:
     GameUnit(GameUnitType type, bool isFriend);
     GameUnit(GameUnitType type, bool isFriend, double pos);
     //当たり判定
+	# ifndef HEADLESS
     Rect collisionDetection{ textureSize };
+	# endif
 };
 //プレイヤーの情報を格納する構造体
 struct CampInfo
@@ -145,7 +147,9 @@ struct FinishEffect : IEffect
 class GameState
 {
 public:
-# ifndef HEADLESS
+# ifdef HEADLESS
+	GameState(json ConfigJson);
+# else
     GameState(JSON ConfigJson);
 # endif
     // GameUnitTypeの連装配列
@@ -158,6 +162,8 @@ public:
     Array<GameUnit> GameUnitList;
     // ユニットを召喚する関数
     bool summonGameUnit(GameUnitType type, bool isFriend);
+	// 資金力強化をする関数
+	bool upgradeProfitLevel(bool isFriend);
     // 勝敗情報
     uint8 winner = 0;
     // 行動処理
@@ -166,6 +172,7 @@ public:
 # else
     void actionProcess(const Audio& HitPop, Effect& effect);
 # endif
+	void profitProcess(uint8 difficulty);
 };
 class WeakAI
 {

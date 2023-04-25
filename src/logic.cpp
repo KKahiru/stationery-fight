@@ -63,7 +63,6 @@ TextureRegion GameUnitType::getAttackingTexture(bool isFriend)
     return isFriend ? this->friendAttackingTexture.resized(textureSize) : this->enemyAttackingTexture.resized(textureSize);
 }
 #endif
-// Siv3Dの関数に依存
 GameUnit::GameUnit(GameUnitType type, bool isFriend)
     : GameUnit(type, isFriend, isFriend ? 0 : 1)
 {}
@@ -76,7 +75,31 @@ GameUnit::GameUnit(GameUnitType type, bool isFriend, double pos)
     this->durability = type.durability;
 }
 
-# ifndef HEADLESS
+# ifdef HEADLESS
+GameState::GameState(json ConfigJson)
+{
+    //召喚ボタン・ユニットの情報の登録
+    for( unsigned long int i=0; i <  ConfigJson["all_types"].size(); i++) {
+        std::string type = ConfigJson["all_types"][i].get<std::string>();
+		String wideType = Widen(type);
+        json unit = ConfigJson["ability_config"][type];
+        GameUnitTypeList.emplace(wideType, GameUnitType(wideType,
+														FeaturesTable[Widen(unit["feature"].get<std::string>())],
+														unit["durability"].get<uint16>(),
+														unit["attack_power"].get<uint16>(),
+														unit["attack_range_end"].get<double>() / 1000,
+														unit["cooldown"].get<uint16>(),
+														unit["speed"].get<double>() / 1000,
+														unit["cost"].get<uint16>(),
+														Widen(unit["ja_name"].get<std::string>()),
+														Widen(unit["description"].get<std::string>())
+														));
+    };
+    //城を造る
+    GameUnitList.push_back(GameUnit(GameUnitTypeList[U"castle"], true));
+    GameUnitList.push_back(GameUnit(GameUnitTypeList[U"castle"], false));
+}
+# else
 GameState::GameState(JSON ConfigJson)
 {
     //召喚ボタン・ユニットの情報の登録
@@ -106,14 +129,56 @@ GameUnitType GameState::getGameUnitType(const GameUnit& target)
     return GameUnitTypeList.at(target.type);
 }
 
-bool GameState::summonGameUnit(GameUnitType type, bool isFriend){
-    if ((isFriend ? FriendCamp.money : EnemyCamp.money) >= type.cost){
+bool GameState::summonGameUnit(GameUnitType type, bool isFriend)
+{
+	CampInfo& camp = isFriend ? FriendCamp : EnemyCamp;
+    if (camp.money >= type.cost)
+	{
         GameUnitList.push_back(GameUnit(type, isFriend));
-        (isFriend ? FriendCamp.money : EnemyCamp.money) -= type.cost;
-    } else {
+        camp.money -= type.cost;
+		return true;
+    }
+	else
+	{
         return false;
     }
-    return true;
+}
+
+bool GameState::upgradeProfitLevel(bool isFriend)
+{
+	CampInfo& camp = isFriend ? FriendCamp : EnemyCamp;
+	const uint16 cost = 120 * Math::Pow(2, camp.profitLevel);
+	if (camp.money >= cost)
+	{
+		camp.money -= cost;
+		camp.profitLevel++;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+
+}
+
+void GameState::profitProcess(uint8 difficulty)
+{
+	//難易度に合わせて資金を増加させる
+	switch (difficulty) {
+		case 1:
+			FriendCamp.money += 10 * Math::Pow(1.5, FriendCamp.profitLevel);
+			EnemyCamp.money += 7 * Math::Pow(1.5, EnemyCamp.profitLevel);
+			break;
+		default:
+		case 2:
+			FriendCamp.money += 10 * Math::Pow(1.5, FriendCamp.profitLevel);
+			EnemyCamp.money += 10 * Math::Pow(1.5, EnemyCamp.profitLevel);
+			break;
+		case 3:
+			FriendCamp.money += 7 * Math::Pow(1.5, FriendCamp.profitLevel);
+			EnemyCamp.money += 12 * Math::Pow(1.5, EnemyCamp.profitLevel);
+			break;
+	}
 }
 
 void WeakAI::saveMoney(CampInfo& info)
@@ -226,7 +291,7 @@ void WeakAI::judge(GameState& state)
             AIStep = 0;
             AIMode = 0;
         }
-    } else /*召喚を試みる*/if (not AITarget.isEmpty() and state.summonGameUnit(state.GameUnitTypeList[AITarget], false)) {
+    } else /*召喚を試みる*/if (not (AITarget == U"") and state.summonGameUnit(state.GameUnitTypeList[AITarget], false)) {
         AIStep ++;
         AITarget = U"";
     }
@@ -381,7 +446,7 @@ void GameState::actionProcess(const Audio& HitPop, Effect& effect)
                 //城が破壊された場合は、勝敗を記録し、終了エフェクトを表示する
                 if (GameUnitList[i].type == U"castle")
                 {
-                    winner = GameUnitList ? 1 : 2;
+                    winner = GameUnitList[i].isFriend ? 2 : 1;
 # ifndef HEADLESS
                     effect.add<FinishEffect>(!GameUnitList[i].isFriend);
 # endif

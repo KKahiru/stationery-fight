@@ -448,22 +448,7 @@ public:
         }
         //各陣営の収入処理
         while (0.2 <= incomeAccumulator) {
-            //難易度に合わせて資金を増加させる
-            switch (difficult_level) {
-                case 1:
-                    state.FriendCamp.money += 10 * Math::Pow(1.5, state.FriendCamp.profitLevel);
-                    state.EnemyCamp.money += 7 * Math::Pow(1.5, state.EnemyCamp.profitLevel);
-                    break;
-                default:
-                case 2:
-                    state.FriendCamp.money += 10 * Math::Pow(1.5, state.FriendCamp.profitLevel);
-                    state.EnemyCamp.money += 12 * Math::Pow(1.5, state.EnemyCamp.profitLevel);
-                    break;
-                case 3:
-                    state.FriendCamp.money += 7 * Math::Pow(1.5, state.FriendCamp.profitLevel);
-                    state.EnemyCamp.money += 12 * Math::Pow(1.5, state.EnemyCamp.profitLevel);
-                    break;
-            }
+            state.profitProcess(difficult_level);
             incomeAccumulator -= 0.5;
             
         }
