@@ -2,6 +2,7 @@
 .DS_Store
 # Project files
 .vs
+.vscode
 Stationery Fight.xcodeproj/project.xcworkspace
 # macOS build files
 App/Stationery Fight.app
@@ -12,3 +13,7 @@ App/Stationery-Fight(*).exe
 App/AS_DEBUG
 # Headless build files
 build
+# Environment setting files
+python_setting.jsonc
+# Python cache files
+__pycache__

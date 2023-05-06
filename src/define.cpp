@@ -40,6 +40,15 @@ json LoadJSON(StringView path)
 	return json::parse(f);
 }
 
+json LoadJSONWithComments(StringView path)
+{
+	std::ifstream f(path);
+	return json::parse(f,
+					   /* callback */ nullptr,
+					   /* allow_exceptions */ true,
+					   /* ignore_comments */ true);
+}
+
 String Widen(std::string_view s)
 {
 	return String(s.begin(), s.end());

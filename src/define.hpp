@@ -41,6 +41,7 @@ namespace Math
 double Random();
 
 json LoadJSON(StringView path);
+json LoadJSONWithComments(StringView path);
 
 String Widen(std::string_view s);
 std::string Narrow(StringView s);

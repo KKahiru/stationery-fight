@@ -1,0 +1,12 @@
+[submodule "lib/libzmq"]
+	path = lib/libzmq
+	url = https://github.com/zeromq/libzmq.git
+[submodule "lib/cppzmq"]
+	path = lib/cppzmq
+	url = https://github.com/zeromq/cppzmq.git
+[submodule "lib/parallel-hashmap"]
+	path = lib/parallel-hashmap
+	url = https://github.com/greg7mdp/parallel-hashmap.git
+[submodule "lib/json"]
+	path = lib/json
+	url = https://github.com/nlohmann/json.git

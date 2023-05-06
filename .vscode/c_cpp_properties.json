@@ -4,9 +4,14 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/lib"
+                "${workspaceFolder}/lib/json/include",
+                "${workspaceFolder}/lib/parallel-hashmap",
+                "${workspaceFolder}/lib/cppzmq",
+                "${workspaceFolder}/lib/libzmq/include"
             ],
-            "defines": ["HEADLESS"],
+            "defines": [
+                "HEADLESS"
+            ],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c17",
             "cppStandard": "c++17",

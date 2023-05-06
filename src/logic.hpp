@@ -25,7 +25,8 @@ enum class Features
     normal,
     eraser,
     longRange,
-    gun
+    gun,
+	arrow
 };
 
 inline HashTable<String, Features> FeaturesTable =
@@ -34,6 +35,7 @@ inline HashTable<String, Features> FeaturesTable =
     { U"eraser", Features::eraser },
     { U"long_range", Features::longRange },
     { U"shot", Features::gun },
+	{ U"arrow", Features::arrow }
 };
 
 struct GameUnitType
@@ -97,7 +99,8 @@ public:
                  String description);
 };
 //ユニットのクラス
-class GameUnit{
+class GameUnit
+{
 public:
     //味方かのbool値
     bool isFriend;
@@ -105,6 +108,8 @@ public:
     String type;
     // 位置
     double pos;
+	// Y位置
+	uint8 y = 0;
     //耐久値
     int16 durability;
     //クールダウン
@@ -154,8 +159,10 @@ public:
 # endif
     // GameUnitTypeの連装配列
     HashTable<String, GameUnitType> GameUnitTypeList = {};
+	// 選択肢リスト
+	Array<String> OptionList;
     // GameUnitからGameUnitTypeを取得する関数
-    GameUnitType getGameUnitType(const GameUnit& target);
+    GameUnitType getGameUnitType(const GameUnit& target) const;
     // プレイヤーと敵の情報生成
     CampInfo FriendCamp, EnemyCamp;
     // ステージ上のユニットのリスト
@@ -174,20 +181,4 @@ public:
 # endif
 	void profitProcess(uint8 difficulty);
 };
-class WeakAI
-{
-    //敵AIの攻撃のモード
-    uint8 AIMode = 0;
-    //敵AIの進行度
-    uint16 AIStep = 0;
-    //敵AIが召喚するターゲット
-    String AITarget = U"";
-    //AIの貯金
-    uint16 AISavingMoney = 0;
-    void saveMoney(CampInfo& info);
-public:
-    // 判断する関数
-    void judge(GameState& state);
-};
-
 }

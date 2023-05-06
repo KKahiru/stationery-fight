@@ -1,5 +1,6 @@
 # include <Siv3D.hpp> // OpenSiv3D v0.6.8
 # include "logic.hpp"
+# include "player.hpp"
 
 using namespace stfi;
 
@@ -441,7 +442,18 @@ public:
             //AI
             if (state.winner == 0)
             {
-                AI.judge(state);
+                String target = AI.judge(state);
+				if (target != U"")
+				{
+					if (target == U"upgrade")
+					{
+						state.upgradeProfitLevel(false);
+					}
+					else
+					{
+						state.summonGameUnit(state.GameUnitTypeList[target], false);
+					}
+				}
             }
             //蓄積された秒数を減らす
             actionAccumulator -= 0.1;

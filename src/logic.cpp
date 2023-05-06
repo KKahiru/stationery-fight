@@ -5,6 +5,8 @@
 //  Created by KKahiru on 2023/04/14.
 //
 
+# include <algorithm>
+
 # include "logic.hpp"
 
 namespace stfi {
@@ -79,7 +81,8 @@ GameUnit::GameUnit(GameUnitType type, bool isFriend, double pos)
 GameState::GameState(json ConfigJson)
 {
     //召喚ボタン・ユニットの情報の登録
-    for( unsigned long int i=0; i <  ConfigJson["all_types"].size(); i++) {
+    for (unsigned long int i = 0; i <  ConfigJson["all_types"].size(); i++)
+	{
         std::string type = ConfigJson["all_types"][i].get<std::string>();
 		String wideType = Widen(type);
         json unit = ConfigJson["ability_config"][type];
@@ -95,6 +98,12 @@ GameState::GameState(json ConfigJson)
 														Widen(unit["description"].get<std::string>())
 														));
     };
+	// 選択肢リストの設定
+	OptionList.push_back(U"upgrade");
+	for (unsigned long int i = 0; i <  ConfigJson["all_types"].size(); i++)
+	{
+		OptionList.push_back(Widen(ConfigJson["all_types"][i].get<std::string>()));
+	}
     //城を造る
     GameUnitList.push_back(GameUnit(GameUnitTypeList[U"castle"], true));
     GameUnitList.push_back(GameUnit(GameUnitTypeList[U"castle"], false));
@@ -103,7 +112,8 @@ GameState::GameState(json ConfigJson)
 GameState::GameState(JSON ConfigJson)
 {
     //召喚ボタン・ユニットの情報の登録
-    for( unsigned long int i=0; i <  ConfigJson[U"all_types"].size(); i++) {
+    for (unsigned long int i = 0; i <  ConfigJson[U"all_types"].size(); i++)
+	{
         String type = ConfigJson[U"all_types"][i].getString();
         JSON unit = ConfigJson[U"ability_config"][type];
         GameUnitTypeList.emplace(type, GameUnitType(type,
@@ -118,13 +128,19 @@ GameState::GameState(JSON ConfigJson)
                                                     unit[U"description"].get<String>()
                                                     ));
     };
+	// 選択肢リストの設定
+	OptionList.push_back(U"upgarde");
+	for (unsigned long int i = 0; i <  ConfigJson["all_types"].size(); i++)
+	{
+		OptionList.push_back(ConfigJson["all_types"][i].get<String>());
+	}
     //城を造る
     GameUnitList.push_back(GameUnit(GameUnitTypeList[U"castle"], true));
     GameUnitList.push_back(GameUnit(GameUnitTypeList[U"castle"], false));
 }
 # endif
 //GameUnitからGameUnitTypeを取得する関数
-GameUnitType GameState::getGameUnitType(const GameUnit& target)
+GameUnitType GameState::getGameUnitType(const GameUnit& target) const
 {
     return GameUnitTypeList.at(target.type);
 }
@@ -179,131 +195,6 @@ void GameState::profitProcess(uint8 difficulty)
 			EnemyCamp.money += 12 * Math::Pow(1.5, EnemyCamp.profitLevel);
 			break;
 	}
-}
-
-void WeakAI::saveMoney(CampInfo& info)
-{
-    if (AISavingMoney < (AIStep + 1) * 25 * Math::Pow(2, info.profitLevel) )
-    {
-        AISavingMoney += info.money;
-        info.money = 0;
-    }
-    return;
-}
-void WeakAI::judge(GameState& state)
-{
-    //勢力の計算
-    double friendPower = 0, enemyPower = 0;
-    for (unsigned long int i = 0; i < state.GameUnitList.size(); i++)
-    {
-        if (state.GameUnitList[i].type != U"castle" and state.GameUnitList[i].type != U"pencil_lead")
-        {
-            //強さは攻撃の強さと耐久力の合計
-            (state.GameUnitList[i].isFriend ? friendPower : enemyPower) += (state.getGameUnitType(state.GameUnitList[i]).generalPower + state.GameUnitList[i].durability);
-        }
-    }
-    float powerRatio;
-    //0除算の防止
-    if (friendPower == 0) {
-        powerRatio = enemyPower == 0 ? 1 : 2;
-    } else {
-        powerRatio = enemyPower / friendPower;
-    }
-    //下準備
-    if (AIMode == 0){
-        AIMode = round(Random()) + 1;
-    }
-    //召喚するユニットの決定
-    if (AIStep != 3) {
-        //勢力の割合に応じた分岐
-        if (powerRatio < 0.5) {
-            switch (state.EnemyCamp.profitLevel) {
-                case 0:
-                case 1:
-                    AITarget = U"eraser";
-                    break;
-                case 2:
-                case 3:
-                    AITarget = U"triangle";
-                    break;
-                case 4:
-                default:
-                    if (AIStep == 0){
-                        AITarget = U"pencil_sharpener";
-                    } else {
-                        AITarget = U"mechanical_pencil";
-                    }
-                    break;
-            }
-        } else if (powerRatio < 1.25){
-            switch (state.EnemyCamp.profitLevel) {
-                case 0:
-                case 1:
-                    saveMoney(state.EnemyCamp);
-                    AITarget = U"pencil";
-                    break;
-                case 2:
-                case 3:
-                    
-                    AITarget = U"triangle";
-                    break;
-                case 4:
-                default:
-                    saveMoney(state.EnemyCamp);
-                    if (AIMode == 1) {
-                        //遠距離の召喚
-                        AITarget = (AIStep == 0) ? U"mechanical_pencil" : U"triangle";
-                    } else {
-                        AITarget = U"triangle";
-                    }
-                    break;
-            }
-        } else {
-            //攻めプロセス
-            switch (state.EnemyCamp.profitLevel) {
-                case 0:
-                case 1:
-                    saveMoney(state.EnemyCamp);
-                    break;
-                case 2:
-                case 3:
-                    saveMoney(state.EnemyCamp);
-                    AITarget=U"triangle";
-                    break;
-                case 4:
-                default:
-                    saveMoney(state.EnemyCamp);
-                    if (AIStep == 0){
-                        AITarget=U"pencil_sharpener";
-                    } else {
-                        AITarget=U"mechanical_pencil";
-                    }
-                    break;
-            }
-        }
-    }
-    if (AIStep == 3) {
-        state.EnemyCamp.money += AISavingMoney;
-        AISavingMoney = 0;
-        if (120 * Math::Pow(2, state.EnemyCamp.profitLevel) <= state.EnemyCamp.money) {
-            state.EnemyCamp.money -= 120 * Math::Pow(2, state.EnemyCamp.profitLevel);
-            state.EnemyCamp.profitLevel ++;
-            AIStep = 0;
-            AIMode = 0;
-        }
-    } else /*召喚を試みる*/if (not (AITarget == U"") and state.summonGameUnit(state.GameUnitTypeList[AITarget], false)) {
-        AIStep ++;
-        AITarget = U"";
-    }
-#if defined(DEBUG) && !defined(HEADLESS)
-    if (KeyShift.pressed()) {
-        Print << U"Mode: " << AIMode;
-        Print << U"Target: " << (AITarget == U"" ? U"資金力強化" : AITarget);
-        Print << U"power" + Format(friendPower) + U"/" + Format(enemyPower);
-        Print << U"money: " + Format(state.FriendCamp.money) + U" / " + Format(state.FriendCamp.money);
-    }
-#endif
-    
 }
 
 # ifndef HEADLESS
@@ -438,24 +329,60 @@ void GameState::actionProcess(const Audio& HitPop, Effect& effect)
                 }
             }
         }
-        //破壊判定
-        for (long int i = GameUnitList.size() - 1; i >= 0;  i--)
-        {
-            if (GameUnitList[i].durability <= 0)
-            {
-                //城が破壊された場合は、勝敗を記録し、終了エフェクトを表示する
-                if (GameUnitList[i].type == U"castle")
-                {
-                    winner = GameUnitList[i].isFriend ? 2 : 1;
-# ifndef HEADLESS
-                    effect.add<FinishEffect>(!GameUnitList[i].isFriend);
-# endif
-                }
-                //削除
-                GameUnitList.erase(GameUnitList.begin() + i);
-            }
-        }
+		// Y座標の更新処理
+		{
+			if (GameUnitList[i].type == U"castle")
+			{
+				// 城は初期値（0）で固定する
+				continue;
+			}
+			
+			// 影響を受ける範囲の定義
+			constexpr double influenceRange = 0.125;
+			const double influenceRangeBegin = GameUnitList[i].pos - influenceRange / 2;
+			const double influenceRangeEnd = influenceRangeBegin + influenceRange;
+			// すでに占領されているY座標
+			Array<uint8> filledYList;
+			for (size_t j = 0; j < GameUnitList.size(); j++)
+			{
+				const GameUnit& target = GameUnitList[j];
+
+				// 範囲内なら
+				if (target.pos >= influenceRangeBegin
+					and target.pos <= influenceRangeEnd
+					and target.type != U"castle")
+				{
+					filledYList.push_back(target.y);
+				}
+			}
+			for (size_t j = 0; j < filledYList.size(); j++)
+			{
+				// 空きが見つかったなら
+				// （jは1ずつ増えるため、ズレが生まれたら空いていることがわかる）
+				if (filledYList[j] != j)
+				{
+					GameUnitList[i].y = j;
+				}
+			}
+		}
     }
+	//破壊判定
+	for (long int i = GameUnitList.size() - 1; i >= 0;  i--)
+	{
+		if (GameUnitList[i].durability <= 0)
+		{
+			//城が破壊された場合は、勝敗を記録し、終了エフェクトを表示する
+			if (GameUnitList[i].type == U"castle")
+			{
+				winner = GameUnitList[i].isFriend ? 2 : 1;
+# ifndef HEADLESS
+				effect.add<FinishEffect>(!GameUnitList[i].isFriend);
+# endif
+			}
+			//削除
+			GameUnitList.erase(GameUnitList.begin() + i);
+		}
+	}
 }
 
 }

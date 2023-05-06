@@ -76,6 +76,20 @@
         "compare": "cpp",
         "forward_list": "cpp",
         "shared_mutex": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "__functional_03": "cpp",
+        "cinttypes": "cpp",
+        "condition_variable": "cpp",
+        "csignal": "cpp",
+        "future": "cpp",
+        "list": "cpp",
+        "regex": "cpp",
+        "scoped_allocator": "cpp",
+        "set": "cpp",
+        "span": "cpp",
+        "thread": "cpp",
+        "unordered_set": "cpp",
+        "variant": "cpp",
+        "filesystem": "cpp"
     }
 }
