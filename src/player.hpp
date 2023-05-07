@@ -49,11 +49,11 @@ public:
 class WeakAI : public IPlayer
 {
 	//敵AIの攻撃のモード
-    uint8 AIMode = 0;
-    //敵AIの進行度
-    uint16 AIStep = 0;
-    //敵AIが召喚するターゲット
-    String AITarget = U"";
+	uint8 AIMode = 0;
+	//敵AIの進行度
+	uint16 AIStep = 0;
+	//敵AIが召喚するターゲット
+	String AITarget = U"";
 	// レベルアップのために貯めている資金
 	uint16 savedMoney = 0;
 	// 必要量まで資金を貯める関数
