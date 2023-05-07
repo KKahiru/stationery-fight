@@ -21,6 +21,7 @@ AIFinishException::AIFinishException(const char* _Message)
 IPlayer::~IPlayer()
 {}
 
+# ifdef HEADLESS
 ConsolePlayer::ConsolePlayer(bool isFriend)
 	: isFriend(isFriend)
 {}
@@ -69,6 +70,7 @@ String ConsolePlayer::judge(const GameState& state)
 	
 	return target;
 }
+# endif
 
 void WeakAI::saveMoney(const CampInfo& info)
 {
@@ -201,7 +203,9 @@ DeepAI::DeepAI(int port, const Array<String>& optionList, bool isFriend)
 	: optionList(optionList), isFriend(isFriend)
 {
 	socket.connect("ipc:///tmp/feeds/" + std::to_string(port));
+# ifdef HEADLESS
 	json paramJSON;
+	
 	paramJSON["winner"] = 0;
 	paramJSON["money"] = 0;
 	paramJSON["profit_level"] = 0;
@@ -215,7 +219,23 @@ DeepAI::DeepAI(int port, const Array<String>& optionList, bool isFriend)
 	
 	// 初期状態を送信
 	socket.send(zmq::buffer(paramJSON.dump()), zmq::send_flags::none);
-	std::cout << "waiting for reply" << std::endl;
+# else
+	JSON paramJSON;
+	
+	paramJSON[U"winner"] = 0;
+	paramJSON[U"money"] = 0;
+	paramJSON[U"profit_level"] = 0;
+	paramJSON[U"power_ratio"] = 1;
+	for (size_t i = 0; i < FeaturesTable.size(); i++)
+	{
+		paramJSON[U"friend_power"].push_back(0);
+		paramJSON[U"enemy_power"].push_back(0);
+	}
+	paramJSON[U"stage"] = {};
+	
+	// 初期状態を送信
+	socket.send(zmq::buffer(paramJSON.formatUTF8Minimum()), zmq::send_flags::none);
+# endif
 	// AIのバージョンを含む返答を受信
 	zmq::message_t reply;
 	if (!socket.recv(reply, zmq::recv_flags::none))
@@ -230,29 +250,12 @@ DeepAI::DeepAI(int port, const Array<String>& optionList, bool isFriend)
 	{
 		throw AICommunicationException{ "AI version does not match" };
 	}
-	std::cout << "received reply" << std::endl;
 	
 }
 
 String DeepAI::judge(const GameState& state)
 {
 	const CampInfo& camp = isFriend ? state.FriendCamp : state.EnemyCamp;
-	json paramJSON;
-	if (isFriend)
-	{
-		paramJSON["winner"] = state.winner;
-	}
-	else
-	{
-		// 勝敗情報を反転する
-		paramJSON["winner"] = state.winner == 1 ? 2 : 1;
-	}
-	paramJSON["money"] = camp.money;
-	paramJSON["profit_level"] = camp.profitLevel;
-	for (const GameUnit& i : state.GameUnitList)
-	{
-		paramJSON["stage"].push_back({{"type", Narrow(i.type)}, {"pos", i.pos}, {"y", i.y}});
-	}
 	
 	HashTable<Features, uint16> friendPowerTable{ 0 }, enemyPowerTable{ 0 };
 
@@ -267,12 +270,55 @@ String DeepAI::judge(const GameState& state)
 		+= unitType.generalPower + unitType.durability;
 	}
 
-	paramJSON["power_ratio"] = totalFriendPower / totalEnemyPower;
+		# ifdef HEADLESS
+	
+		json paramJSON;
+		if (isFriend)
+		{
+			paramJSON["winner"] = state.winner;
+		}
+		else
+		{
+			// 勝敗情報を反転する
+			paramJSON["winner"] = state.winner == 1 ? 2 : 1;
+		}
+		paramJSON["money"] = camp.money;
+		paramJSON["profit_level"] = camp.profitLevel;
+		for (const GameUnit& i : state.GameUnitList)
+		{
+			paramJSON["stage"].push_back({{"type", Narrow(i.type)}, {"pos", i.pos}, {"y", i.y}});
+		}
+		paramJSON["power_ratio"] = totalFriendPower / totalEnemyPower;
+		# else
+	
+		JSON paramJSON;
+		if (isFriend)
+		{
+			paramJSON[U"winner"] = state.winner;
+		}
+		else
+		{
+			// 勝敗情報を反転する
+			paramJSON[U"winner"] = state.winner == 1 ? 2 : 1;
+		}
+		paramJSON[U"money"] = camp.money;
+		paramJSON[U"profit_level"] = camp.profitLevel;
+		for (const GameUnit& i : state.GameUnitList)
+		{
+			paramJSON[U"stage"].push_back({{U"type", i.type}, {U"pos", i.pos}, {U"y", i.y}});
+		}
+		paramJSON[U"power_ratio"] = totalFriendPower / totalEnemyPower;
+	
+		# endif
+	
 
 	for (const auto& i : FeaturesTable)
 	{
 		Features feature = FeaturesTable[i.first];
 		auto friendItr = friendPowerTable.find(feature);
+		
+		# ifdef HEADLESS
+		
 		if (friendItr != friendPowerTable.end())
 		{
 			paramJSON["friend_power"].push_back(friendItr->second);
@@ -281,8 +327,24 @@ String DeepAI::judge(const GameState& state)
 		{
 			paramJSON["friend_power"].push_back(0);
 		}
+		
+		# else
+		
+		if (friendItr != friendPowerTable.end())
+		{
+			paramJSON[U"friend_power"].push_back(friendItr->second);
+		}
+		else
+		{
+			paramJSON[U"friend_power"].push_back(0);
+		}
+		
+		# endif
 
 		auto enemyItr = enemyPowerTable.find(feature);
+		
+		# ifdef HEADLESS
+		
 		if (enemyItr != enemyPowerTable.end())
 		{
 			paramJSON["enemy_power"].push_back(enemyItr->second);
@@ -291,9 +353,30 @@ String DeepAI::judge(const GameState& state)
 		{
 			paramJSON["enemy_power"].push_back(0);
 		}
+		
+		# else
+		
+		if (enemyItr != enemyPowerTable.end())
+		{
+			paramJSON[U"enemy_power"].push_back(enemyItr->second);
+		}
+		else
+		{
+			paramJSON[U"enemy_power"].push_back(0);
+		}
+		
+		# endif
 	}
-	 
+	
+	# ifdef HEADLESS
+	
 	socket.send(zmq::buffer(paramJSON.dump()), zmq::send_flags::none);
+	
+	# else
+	
+	socket.send(zmq::buffer(paramJSON.formatUTF8Minimum()), zmq::send_flags::none);
+	
+	# endif
 	// 返答を受信
 	zmq::message_t reply;
 	if (!socket.recv(reply, zmq::recv_flags::none))

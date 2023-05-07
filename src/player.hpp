@@ -36,6 +36,7 @@ public:
 
 };
 
+# ifdef HEADLESS
 class ConsolePlayer : public IPlayer
 {
 	bool isFriend;
@@ -43,6 +44,7 @@ public:
 	ConsolePlayer(bool isFriend);
 	String judge(const GameState& state);
 };
+# endif
 
 class WeakAI : public IPlayer
 {

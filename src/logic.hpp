@@ -121,10 +121,6 @@ public:
     //コンストラクター
     GameUnit(GameUnitType type, bool isFriend);
     GameUnit(GameUnitType type, bool isFriend, double pos);
-    //当たり判定
-	# ifndef HEADLESS
-    Rect collisionDetection{ textureSize };
-	# endif
 };
 //プレイヤーの情報を格納する構造体
 struct CampInfo

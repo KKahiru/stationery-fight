@@ -130,9 +130,9 @@ GameState::GameState(JSON ConfigJson)
     };
 	// 選択肢リストの設定
 	OptionList.push_back(U"upgarde");
-	for (unsigned long int i = 0; i <  ConfigJson["all_types"].size(); i++)
+	for (unsigned long int i = 0; i <  ConfigJson[U"all_types"].size(); i++)
 	{
-		OptionList.push_back(ConfigJson["all_types"][i].get<String>());
+		OptionList.push_back(ConfigJson[U"all_types"][i].get<String>());
 	}
     //城を造る
     GameUnitList.push_back(GameUnit(GameUnitTypeList[U"castle"], true));
@@ -338,7 +338,7 @@ void GameState::actionProcess(const Audio& HitPop, Effect& effect)
 			}
 			
 			// 影響を受ける範囲の定義
-			constexpr double influenceRange = 0.125;
+			constexpr double influenceRange = 0.1;
 			const double influenceRangeBegin = GameUnitList[i].pos - influenceRange / 2;
 			const double influenceRangeEnd = influenceRangeBegin + influenceRange;
 			// すでに占領されているY座標
@@ -355,12 +355,11 @@ void GameState::actionProcess(const Audio& HitPop, Effect& effect)
 					filledYList.push_back(target.y);
 				}
 			}
+			// 一つずつ空いているか確認する
 			for (size_t j = 0; j < filledYList.size(); j++)
 			{
-				// 空きが見つかったなら
-				// （jは1ずつ増えるため、ズレが生まれたら空いていることがわかる）
-				if (filledYList[j] != j)
-				{
+				// 空いているなら
+				if (*std::find(filledYList.begin(), filledYList.end(), j) != j) {
 					GameUnitList[i].y = j;
 				}
 			}
