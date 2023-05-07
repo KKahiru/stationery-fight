@@ -38,9 +38,13 @@
 		2C5C471126B4F08E005E8C85 /* libzlib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C5C471026B4F08E005E8C85 /* libzlib.a */; };
 		2C6906D82298140F00A427D0 /* engine in Resources */ = {isa = PBXBuildFile; fileRef = 2C6906D72298140F00A427D0 /* engine */; };
 		6F067DE929E97A9900A77857 /* logic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6F067DE829E97A9900A77857 /* logic.cpp */; };
-		6F067DEC29EB94AE00A77857 /* common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6F067DEA29EB94AD00A77857 /* common.cpp */; };
 		6F6139D02A0722F800B59858 /* player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6F6139CE2A0722F800B59858 /* player.cpp */; };
 		6F613EC32A07293000B59858 /* libzmq.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F613C132A0726F300B59858 /* libzmq.a */; };
+		6FB7B3EA2A07965E00CE18C1 /* RuleException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FB7B3E82A07965E00CE18C1 /* RuleException.cpp */; };
+		6FB7B3EB2A07965E00CE18C1 /* Title.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FB7B3E32A07965D00CE18C1 /* Title.cpp */; };
+		6FB7B3EC2A07965E00CE18C1 /* DifficultySetting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FB7B3E72A07965E00CE18C1 /* DifficultySetting.cpp */; };
+		6FB7B3EE2A07965E00CE18C1 /* Game.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FB7B3E02A07965D00CE18C1 /* Game.cpp */; };
+		6FB7B3F12A079B6300CE18C1 /* Common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FB7B3EF2A079B6300CE18C1 /* Common.cpp */; };
 		A57A427B280BB50A004B0397 /* resource in Resources */ = {isa = PBXBuildFile; fileRef = A57A427A280BB50A004B0397 /* resource */; };
 		A5FE32A927FC7EC400DAA541 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = A5FE32A827FC7EC400DAA541 /* README.md */; };
 /* End PBXBuildFile section */
@@ -1010,7 +1014,7 @@
 /* Begin PBXFileReference section */
 		2C1778841CE0A9EA00BB8AD0 /* Stationery Fight.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Stationery Fight.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C1778921CE0A9EA00BB8AD0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2C1778991CE0AA7C00BB8AD0 /* Main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Main.cpp; sourceTree = "<group>"; tabWidth = 4; };
+		2C1778991CE0AA7C00BB8AD0 /* Main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Main.cpp; sourceTree = "<group>"; tabWidth = 4; usesTabs = 1; };
 		2C1778A21CE0B65500BB8AD0 /* icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = icon.icns; sourceTree = "<group>"; };
 		2C5C46DC26B4F00D005E8C85 /* libcurl.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcurl.tbd; path = usr/lib/libcurl.tbd; sourceTree = SDKROOT; };
 		2C5C46DE26B4F014005E8C85 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
@@ -1040,13 +1044,21 @@
 		2C5C470D26B4F08A005E8C85 /* libopus.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libopus.a; path = ../../lib/macOS/opus/libopus.a; sourceTree = "<group>"; };
 		2C5C471026B4F08E005E8C85 /* libzlib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libzlib.a; path = ../../lib/macOS/zlib/libzlib.a; sourceTree = "<group>"; };
 		2C6906D72298140F00A427D0 /* engine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = engine; path = App/engine; sourceTree = "<group>"; };
-		6F067DE729E97A9900A77857 /* logic.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = logic.hpp; sourceTree = "<group>"; };
-		6F067DE829E97A9900A77857 /* logic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = logic.cpp; sourceTree = "<group>"; };
-		6F067DEA29EB94AD00A77857 /* common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = common.cpp; sourceTree = "<group>"; };
-		6F067DEB29EB94AE00A77857 /* common.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = common.hpp; sourceTree = "<group>"; };
-		6F6139CE2A0722F800B59858 /* player.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = player.cpp; sourceTree = "<group>"; };
-		6F6139CF2A0722F800B59858 /* player.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = player.hpp; sourceTree = "<group>"; };
+		6F067DE729E97A9900A77857 /* logic.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = logic.hpp; sourceTree = "<group>"; usesTabs = 1; };
+		6F067DE829E97A9900A77857 /* logic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = logic.cpp; sourceTree = "<group>"; usesTabs = 1; };
+		6F6139CE2A0722F800B59858 /* player.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = player.cpp; sourceTree = "<group>"; usesTabs = 1; };
+		6F6139CF2A0722F800B59858 /* player.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = player.hpp; sourceTree = "<group>"; usesTabs = 1; };
 		6F613B772A0726F200B59858 /* ZeroMQ.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ZeroMQ.xcodeproj; path = lib/libzmq/build/ZeroMQ.xcodeproj; sourceTree = "<group>"; };
+		6FB7B3E02A07965D00CE18C1 /* Game.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Game.cpp; path = Scenes/Game.cpp; sourceTree = "<group>"; usesTabs = 1; };
+		6FB7B3E22A07965D00CE18C1 /* DifficultySetting.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = DifficultySetting.hpp; path = Scenes/DifficultySetting.hpp; sourceTree = "<group>"; usesTabs = 1; };
+		6FB7B3E32A07965D00CE18C1 /* Title.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Title.cpp; path = Scenes/Title.cpp; sourceTree = "<group>"; };
+		6FB7B3E42A07965E00CE18C1 /* Title.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = Title.hpp; path = Scenes/Title.hpp; sourceTree = "<group>"; };
+		6FB7B3E52A07965E00CE18C1 /* Game.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = Game.hpp; path = Scenes/Game.hpp; sourceTree = "<group>"; usesTabs = 1; };
+		6FB7B3E72A07965E00CE18C1 /* DifficultySetting.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = DifficultySetting.cpp; path = Scenes/DifficultySetting.cpp; sourceTree = "<group>"; usesTabs = 1; };
+		6FB7B3E82A07965E00CE18C1 /* RuleException.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = RuleException.cpp; path = Scenes/RuleException.cpp; sourceTree = "<group>"; };
+		6FB7B3E92A07965E00CE18C1 /* RuleException.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = RuleException.hpp; path = Scenes/RuleException.hpp; sourceTree = "<group>"; };
+		6FB7B3EF2A079B6300CE18C1 /* Common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Common.cpp; sourceTree = "<group>"; };
+		6FB7B3F02A079B6300CE18C1 /* Common.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Common.hpp; sourceTree = "<group>"; };
 		A57A427A280BB50A004B0397 /* resource */ = {isa = PBXFileReference; lastKnownFileType = folder; name = resource; path = App/resource; sourceTree = "<group>"; };
 		A5FE32A827FC7EC400DAA541 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1117,16 +1129,25 @@
 		2C1778981CE0AA7C00BB8AD0 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				2C1778991CE0AA7C00BB8AD0 /* Main.cpp */,
+				6FB7B3EF2A079B6300CE18C1 /* Common.cpp */,
+				6FB7B3F02A079B6300CE18C1 /* Common.hpp */,
+				6FB7B3E72A07965E00CE18C1 /* DifficultySetting.cpp */,
+				6FB7B3E22A07965D00CE18C1 /* DifficultySetting.hpp */,
+				6FB7B3E02A07965D00CE18C1 /* Game.cpp */,
+				6FB7B3E52A07965E00CE18C1 /* Game.hpp */,
+				6FB7B3E82A07965E00CE18C1 /* RuleException.cpp */,
+				6FB7B3E92A07965E00CE18C1 /* RuleException.hpp */,
+				6FB7B3E32A07965D00CE18C1 /* Title.cpp */,
+				6FB7B3E42A07965E00CE18C1 /* Title.hpp */,
 				6F6139CE2A0722F800B59858 /* player.cpp */,
 				6F6139CF2A0722F800B59858 /* player.hpp */,
-				6F067DEA29EB94AD00A77857 /* common.cpp */,
-				6F067DEB29EB94AE00A77857 /* common.hpp */,
 				6F067DE829E97A9900A77857 /* logic.cpp */,
 				6F067DE729E97A9900A77857 /* logic.hpp */,
-				2C1778991CE0AA7C00BB8AD0 /* Main.cpp */,
 			);
 			path = src;
 			sourceTree = "<group>";
+			usesTabs = 0;
 		};
 		2CC7F9861F45930A0071A239 /* Frameworks */ = {
 			isa = PBXGroup;
@@ -2346,9 +2367,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				6F6139D02A0722F800B59858 /* player.cpp in Sources */,
+				6FB7B3EA2A07965E00CE18C1 /* RuleException.cpp in Sources */,
 				6F067DE929E97A9900A77857 /* logic.cpp in Sources */,
-				6F067DEC29EB94AE00A77857 /* common.cpp in Sources */,
+				6FB7B3EE2A07965E00CE18C1 /* Game.cpp in Sources */,
+				6FB7B3F12A079B6300CE18C1 /* Common.cpp in Sources */,
 				2C17789A1CE0AA7C00BB8AD0 /* Main.cpp in Sources */,
+				6FB7B3EB2A07965E00CE18C1 /* Title.cpp in Sources */,
+				6FB7B3EC2A07965E00CE18C1 /* DifficultySetting.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

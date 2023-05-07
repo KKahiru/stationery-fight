@@ -19,7 +19,7 @@
 	],
 	"ability_config": {
 		"pencil": {
-			"ja_name": "\\u925b\\u7b46",
+			"ja_name": "鉛筆",
 			"description": "「なんの変哲もない」鉛筆です。\n性能的にはバランス型です。",
 			"feature": "normal",
 			"durability": 100,
@@ -31,7 +31,7 @@
 			"cost": 100
 		},
 		"eraser": {
-			"ja_name": "\\u6d88\\u3057\\u30b4\\u30e0",
+			"ja_name": "消しゴム",
 			"description": "とても脆く、耐久力が低いだけでなく\n攻撃するたびに少しずつ削れていきます。\nただ、攻撃力だけは鉛筆より強く、コストも低いです。",
 			"feature": "eraser",
 			"durability": 50,
@@ -43,7 +43,7 @@
 			"cost": 70
 		},
 		"triangle": {
-			"ja_name": "\\u4e09\\u89d2\\u5b9a\\u898f",
+			"ja_name": "三角定規",
 			"description": "鉛筆を圧倒する耐久力と攻撃力を持っていて、\n鉛筆が相手なら余裕で勝てます。",
 			"feature": "long_range",
 			"durability": 175,
@@ -55,7 +55,7 @@
 			"cost": 400
 		},
 		"mechanical_pencil": {
-			"ja_name": "\\u30b7\\u30e3\\u30fc\\u30da\\u30f3",
+			"ja_name": "シャーペン",
 			"description": "遠距離攻撃を仕掛けてくる、とても強力な文房具です。\nできるだけ前方に盾となるような\n文房具を配置した方が良いです。",
 			"feature": "shot",
 			"durability": 175,
@@ -67,7 +67,7 @@
 			"cost": 600
 		},
 		"pencil_lead": {
-			"ja_name": "\\u30b7\\u30e3\\u30fc\\u82af",
+			"ja_name": "シャー芯",
 			"description": "シャーペンが放つ矢のようなシャー芯です。",
 			"feature": "arrow",
 			"durability": 9999,
@@ -79,7 +79,7 @@
 			"cost": 65535
 		},
 		"pencil_sharpener": {
-			"ja_name": "\\u925b\\u7b46\\u524a\\u308a",
+			"ja_name": "鉛筆削り",
 			"description": "耐久力がとても高く、盾となる文房具です。\nただし移動速度が遅く、攻撃も弱いです。",
 			"feature": "normal",
 			"durability": 900,
@@ -91,7 +91,7 @@
 			"cost": 650
 		},
 		"compass": {
-			"ja_name": "\\u30b3\\u30f3\\u30d1\\u30b9",
+			"ja_name": "コンパス",
 			"description": "あらゆる面で最強の近接攻撃型文房具です。",
 			"feature": "long_range",
 			"durability": 350,
@@ -103,7 +103,7 @@
 			"cost": 800
 		},
 		"castle": {
-			"ja_name": "\\u57ce",
+			"ja_name": "城",
 			"description": "城です。",
 			"feature": "normal",
 			"durability": 1200,

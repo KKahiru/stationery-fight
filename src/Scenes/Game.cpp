@@ -1,0 +1,286 @@
+//
+//  Game.cpp
+//  Stationery Fight
+//
+//  Created by KKahiru on 2023/05/07.
+//
+
+#include "Game.hpp"
+
+//コンフィグの値を取得する関数
+template <class Type>
+Type Game::GetConfigValue(String type, String key) const
+{
+	return ConfigJson[U"ability_config"][type][key].get<Type>();
+}
+
+String Game::GetStringValue(String type, String key) const
+{
+	return ConfigJson[U"ability_config"][type][key].getString();
+}
+
+uint16 Game::GetXPos(const double& pos) const
+{
+	return pos * Scene::Width();
+}
+
+// コンストラクタ
+Game::Game(const InitData& init)
+	: IScene{ init },
+	state(ConfigJson)
+{
+	// 背景の設定
+	Scene::SetBackground(Palette::Lightskyblue);
+	// マスク用のシェーダーの読み込み
+	maskShader = HLSL{ Resource(U"resource/shader/hlsl/multi_texture_mask.hlsl"), U"PS" }
+	| GLSL{ Resource(U"resource/shader/glsl/multi_texture_mask.frag"), {{U"PSConstants2D", 0}} };
+	if (not maskShader)
+	{
+		throw Error{U"Error! Failed to load a shader file."};
+	}
+	
+	for( unsigned long int i = 0; i <  ConfigJson[U"available_types"].size(); i++)
+	{
+		summonButtonList.push_back(summon_button(ConfigJson[U"available_types"][i].getString(), i));
+	};
+	BGM.play();
+}
+
+// 更新処理
+void Game::update()
+{
+	//蓄積された秒数の記録
+	actionAccumulator += Scene::DeltaTime();
+	incomeAccumulator += Scene::DeltaTime();
+	//ユニットのクリック時の処理
+	for (GameUnit& item : GameUnitList)
+	{
+		//クリック時の処理
+		RectF collisionDetection{ Arg::center(GetXPos(item.pos), Scene::Center().y - item.y * texture_size / 8), textureSize };
+		if (item.isFriend and item.type != U"pencil_lead")
+		{
+			if (collisionDetection.leftClicked() and item.isFriend)
+			{
+				//左クリック時に（味方なら）固定
+				item.isFixed = true;
+			}
+			else if(collisionDetection.rightClicked() and item.isFriend)
+			{
+				//右クリック時に（味方なら）固定解除
+				item.isFixed = false;
+			}
+		}
+	}
+	// 召喚ボタンのクリック時の処理
+	for (unsigned long int i = 0; i < summonButtonList.size(); i++)
+	{
+		// ボタンがクリックされたら
+		if (summonButtonList[i].background.leftClicked())
+		{
+			// 可能ならユニットを召喚する
+			if (state.summonGameUnit(GameUnitTypeList[summonButtonList[i].type], true))
+			{
+				SummonSound.playOneShot();
+			}
+		}
+	}
+	
+	// 資金力強化ボタン
+	if (moneyButton.leftClicked() and state.FriendCamp.money >= 120 * Math::Pow(2, state.FriendCamp.profitLevel))
+	{
+		state.FriendCamp.money -=  120 * Math::Pow(2, state.FriendCamp.profitLevel);
+		state.FriendCamp.profitLevel ++;
+		SummonSound.playOneShot();
+	}
+	// 強化ボタンが押せるようになったら音を鳴らす
+	if (state.FriendCamp.money >= 120 * Math::Pow(2, state.FriendCamp.profitLevel))
+	{
+		if (not WasMoneyButtonAvilable)
+		{
+			MoneyAvailable.playOneShot();
+			WasMoneyButtonAvilable = true;
+		}
+	}
+	else
+	{
+		WasMoneyButtonAvilable = false;
+	}
+	
+	// ユニットの行動処理（0.05秒刻み）
+	while ( 0.05 <= actionAccumulator)
+	{
+		// デバック情報の削除
+		ClearPrint();
+		state.actionProcess(HitPop, effect);
+		// AI
+		if (state.winner == 0)
+		{
+			String target = AI.judge(state);
+			if (target != U"")
+			{
+				if (target == U"upgrade")
+				{
+					state.upgradeProfitLevel(false);
+				}
+				else
+				{
+					state.summonGameUnit(state.GameUnitTypeList[target], false);
+				}
+			}
+		}
+		// 蓄積された秒数を減らす
+		actionAccumulator -= 0.1;
+	}
+	// 各陣営の収入処理
+	while (0.4 <= incomeAccumulator)
+	{
+		state.profitProcess(getData().DifficultyLevel);
+		incomeAccumulator -= 0.4;
+		
+	}
+	waiting_time += state.winner != 0 ? Scene::DeltaTime() : 0;
+	if (waiting_time >= 4)
+	{
+		changeScene(U"Title");
+	}
+}
+
+// 描画
+void Game::draw() const
+{
+	// ユニットの描画
+	for (const GameUnit& item : GameUnitList)
+	{
+		//座標
+		Vec2 pos;
+		if (item.type == U"pencil_lead")
+		{
+			pos = { GetXPos(item.pos) , Scene::Center().y };
+		}
+		else
+		{
+			pos = { GetXPos(item.pos) , Scene::Center().y - item.y * texture_size / 8 };
+		}
+		//耐久値の割合
+		float damage_proportion = (float)item.durability / state.getGameUnitType(item).durability;
+		//シルエット
+		RenderTexture silhouette;
+		//攻撃しているか
+		if (item.cooldown > GameUnitTypeList.at(item.type).cooldown / 5 * 3)
+		{
+			//攻撃テクスチャーで描画
+			state.getGameUnitType(item).getAttackingTexture(item.isFriend).drawAt(pos);
+			silhouette = (item.isFriend ? state.getGameUnitType(item).friendAttackingMaskRenderTexture : state.getGameUnitType(item).enemyAttackingMaskRenderTexture);
+		}
+		else
+		{
+			//通常テクスチャーで描画
+			state.getGameUnitType(item).getNormalTexture(item.isFriend).drawAt(pos);
+			silhouette = (item.isFriend ? state.getGameUnitType(item).friendNormalMaskRenderTexture : state.getGameUnitType(item).enemyNormalMaskRenderTexture);
+		}
+		//割れ目の描画
+		if (damage_proportion < 0.15)
+		{
+			Graphics2D::SetPSTexture(1, silhouette);
+			// マルチテクスチャによるマスクのシェーダを開始
+			const ScopedCustomShader2D shader{ maskShader };
+			crack[2].drawAt(pos);
+		}
+		else if (damage_proportion < 0.3)
+		{
+			Graphics2D::SetPSTexture(1, silhouette);
+			// マルチテクスチャによるマスクのシェーダを開始
+			const ScopedCustomShader2D shader{ maskShader };
+			crack[1].drawAt(pos);
+		}
+		else if (damage_proportion < 0.6)
+		{
+			Graphics2D::SetPSTexture(1, silhouette);
+			// マルチテクスチャによるマスクのシェーダを開始
+			const ScopedCustomShader2D shader{ maskShader };
+			crack[0].drawAt(pos);
+		}
+	}
+	
+	// 耐久力バーの描画
+	if (state.winner == 0)
+	{
+		float friendCastleDamage = (float)GameUnitList[0].durability / state.getGameUnitType(GameUnitList[0]).durability;
+		float enemyCastleDamage = (float)GameUnitList[1].durability / state.getGameUnitType(GameUnitList[0]).durability;
+		Color friend_castle_bar_color;
+		Color enemy_castle_bar_color;
+		if (friendCastleDamage > 0.6 )
+		{
+			friend_castle_bar_color = Palette::Greenyellow;
+		}
+		else if (friendCastleDamage > 0.3)
+		{
+			friend_castle_bar_color = Palette::Yellow;
+		}
+		else
+		{
+			friend_castle_bar_color = Palette::Red;
+		}
+		
+		if (enemyCastleDamage > 0.6 )
+		{
+			enemy_castle_bar_color = Palette::Greenyellow;
+		}
+		else if (enemyCastleDamage > 0.3)
+		{
+			enemy_castle_bar_color = Palette::Yellow;
+		}
+		else
+		{
+			enemy_castle_bar_color = Palette::Red;
+		}
+
+		Line{10, Scene::Center().y - 100, 110, Scene::Center().y - 100}.draw(10, Palette::Darkgray);
+		Line{10, Scene::Center().y - 100, 10 + 100 * friendCastleDamage, Scene::Center().y - 100}.draw(10, friend_castle_bar_color);
+		Line{Scene::Width() - 110, Scene::Center().y - 100, Scene::Width() - 10, Scene::Center().y - 100}.draw(10, Palette::Darkgray);
+		Line{Scene::Width() - 10 - 100 * enemyCastleDamage, Scene::Center().y - 100, Scene::Width() - 10, Scene::Center().y - 100}.draw(10, enemy_castle_bar_color);
+	}
+	//背景の描画
+	{
+		const uint16 line = Scene::Center().y + texture_size / 2;
+		//土！！！！
+		Rect{ 0, line, Scene::Width(), Scene::Height() - line }.draw(Color{ 175, 108, 53 });
+		//草！！！！
+		Rect{ 0, line, Scene::Width(), 25 }.draw(Palette::Forestgreen);
+	}
+	
+	// 資金残高表記
+	moneyInfoFont(U"手持ちのお金: " + Format(state.FriendCamp.money) + U"円").draw(0, Scene::Height() - texture_size - 40);
+	
+	// マウスオーバーされた召喚ボタン
+	String MouseOveredButton = U"";
+	//召喚ボタンの描画
+	for (const auto& item : summonButtonList)
+	{
+		//背景と枠線の描画
+		item.background.draw(GetConfigValue<int>(item.type, U"cost") > state.FriendCamp.money ? ColorF{ 0.4, 0.4, 0.4 } : item.background.mouseOver() ? ColorF{ 0.5, 0.5, 0.5 } : ColorF{ 0.7, 0.7, 0.7 }).drawFrame(3, 0, ColorF{ 0.3, 0.3, 0.3 });
+		//画像の描画(* 0.4 = * 0.8 / 2)
+		item.texture.resized(texture_size * 0.8).drawAt(item.x,Scene::Size().y - texture_size * 0.4);
+		//ラベルの描画
+		summonButtonFont(Format(GameUnitTypeList[item.type].cost) + U"円").drawAt(item.x,Scene::Size().y - texture_size * 0.875);
+		if (item.background.mouseOver())
+		{
+			MouseOveredButton = item.type;
+		}
+	}
+	
+	// 資金力強化ボタン
+	moneyButton.draw(120 * Math::Pow(2, state.FriendCamp.profitLevel) > state.FriendCamp.money ? static_cast<HSV>(Palette::Darkgoldenrod) : moneyButton.mouseOver() ? static_cast<HSV>(Palette::Goldenrod) : HSV{ 40, 0.8, 1.0 }).drawFrame(3, 0, Palette::Goldenrod);
+	upgradeButtonFont( U"資金力強化に\n投資する\n" + Format(120 * Math::Pow(2, state.FriendCamp.profitLevel)) + U"円" ).drawAt(Scene::Width() - texture_size / 2, Scene::Height() - texture_size * 0.5);
+	
+	// 説明欄
+	if (not (MouseOveredButton == U""))
+	{
+		Rect{0, 0, Scene::Width(), 150}.draw(ColorF(Palette::Dimgray, 0.8)).drawFrame(2, 0, Palette::Black);
+		descriptionFont(GetStringValue(MouseOveredButton, U"description")).draw(texture_size + 30, 10);
+		GameUnitTypeList[MouseOveredButton].getNormalTexture(true).draw(14, 2);
+		nameFont(GetStringValue(MouseOveredButton, U"ja_name")).draw(2, texture_size + 2);
+	}
+	// エフェクトの更新
+	effect.update();
+}
