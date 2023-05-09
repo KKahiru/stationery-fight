@@ -110,6 +110,7 @@ public:
 	double pos;
 	// Y位置
 	uint8 y = 0;
+	uint8 maxY = 0;
 	//耐久値
 	int16 durability;
 	//クールダウン

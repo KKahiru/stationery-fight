@@ -361,6 +361,7 @@ void GameState::actionProcess(const Audio& HitPop, Effect& effect)
 				// 空いているなら
 				if (*std::find(filledYList.begin(), filledYList.end(), j) != j) {
 					GameUnitList[i].y = j;
+					GameUnitList[i].maxY = *max_element(filledYList.begin(), filledYList.end());
 				}
 			}
 		}

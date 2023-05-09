@@ -14,6 +14,8 @@
 class Game : public App::Scene
 {
 	
+	// 傾斜の角度
+	static constexpr double slopeDegree = 0.125;
 	//コンフィグの値を取得する関数
 	template <class Type>
 	Type GetConfigValue(String type, String key) const;
@@ -21,6 +23,10 @@ class Game : public App::Scene
 	String GetStringValue(String type, String key) const;
 	
 	uint16 GetXPos(const double& pos) const;
+	
+	double GetYPos(const double& pos) const;
+	
+	double GetYOffset(const uint16& pos) const;
 	
 	//召喚ボタンの情報を格納する構造体
 	struct summon_button
@@ -56,6 +62,8 @@ class Game : public App::Scene
 	const Audio MoneyAvailable{ Resource(U"resource/sound/money_available.mp3") };
 	//BGM
 	const Audio BGM{ Audio::Stream, Resource(U"resource/sound/bgm.mp3"), Loop::Yes };
+	// 土と草原のボーダー
+	const uint16 border = Scene::Center().y * 1.25;
 	//エフェクト
 	Effect effect;
 	//マスク用のシェーダー

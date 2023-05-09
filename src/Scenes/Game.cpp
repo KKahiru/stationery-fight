@@ -24,6 +24,16 @@ uint16 Game::GetXPos(const double& pos) const
 	return pos * Scene::Width();
 }
 
+double Game::GetYPos(const double& pos) const
+{
+	return border / 2 - Math::Tan(-slopeDegree) * GetXPos(pos);
+}
+
+double Game::GetYOffset(const uint16& pos) const
+{
+	return Math::Tan(-slopeDegree) * pos;
+}
+
 // コンストラクタ
 Game::Game(const InitData& init)
 	: IScene{ init },
@@ -148,6 +158,12 @@ void Game::update()
 // 描画
 void Game::draw() const
 {
+	//背景の描画
+	//土！！！！
+	Quad{ Vec2{ 0, Scene::Height() }, Vec2{ 0, border },  Vec2{ Scene::Width(), border - GetYOffset(Scene::Width()) }, Vec2{ Scene::Width(), Scene::Height() } }.draw(Color{ 175, 108, 53 });
+	//草！！！！
+	Quad{ Vec2{ 0, border }, Vec2{ 0, 0 },  Vec2{ Scene::Width(), 0 - GetYOffset(Scene::Width()) }, Vec2{ Scene::Width(), border - GetYOffset(Scene::Width()) } }.draw(Color{ 68, 187, 68 });
+	
 	// ユニットの描画
 	for (const GameUnit& item : GameUnitList)
 	{
@@ -155,11 +171,11 @@ void Game::draw() const
 		Vec2 pos;
 		if (item.type == U"pencil_lead")
 		{
-			pos = { GetXPos(item.pos) , Scene::Center().y };
+			pos = { GetXPos(item.pos) , GetYPos(item.pos) };
 		}
 		else
 		{
-			pos = { GetXPos(item.pos) , Scene::Center().y - item.y * texture_size / 8 };
+			pos = { GetXPos(item.pos) , GetYPos(item.pos) - (item.y - item.maxY / 2) * texture_size / 4 };
 		}
 		//耐久値の割合
 		float damage_proportion = (float)item.durability / state.getGameUnitType(item).durability;
@@ -169,36 +185,36 @@ void Game::draw() const
 		if (item.cooldown > GameUnitTypeList.at(item.type).cooldown / 5 * 3)
 		{
 			//攻撃テクスチャーで描画
-			state.getGameUnitType(item).getAttackingTexture(item.isFriend).drawAt(pos);
+			state.getGameUnitType(item).getAttackingTexture(item.isFriend).rotated(slopeDegree).drawAt(pos);
 			silhouette = (item.isFriend ? state.getGameUnitType(item).friendAttackingMaskRenderTexture : state.getGameUnitType(item).enemyAttackingMaskRenderTexture);
 		}
 		else
 		{
 			//通常テクスチャーで描画
-			state.getGameUnitType(item).getNormalTexture(item.isFriend).drawAt(pos);
+			state.getGameUnitType(item).getNormalTexture(item.isFriend).rotated(slopeDegree).drawAt(pos);
 			silhouette = (item.isFriend ? state.getGameUnitType(item).friendNormalMaskRenderTexture : state.getGameUnitType(item).enemyNormalMaskRenderTexture);
 		}
 		//割れ目の描画
-		if (damage_proportion < 0.15)
-		{
+		if (damage_proportion < 0.6) {
+			// 何番目の割れ目を使って描画するか
+			size_t crackIndex;
+			if (damage_proportion < 0.15)
+			{
+				crackIndex = 2;
+			}
+			else if (damage_proportion < 0.3)
+			{
+				crackIndex = 1;
+			}
+			else
+			{
+				crackIndex = 0;
+			}
+			
 			Graphics2D::SetPSTexture(1, silhouette);
 			// マルチテクスチャによるマスクのシェーダを開始
 			const ScopedCustomShader2D shader{ maskShader };
-			crack[2].drawAt(pos);
-		}
-		else if (damage_proportion < 0.3)
-		{
-			Graphics2D::SetPSTexture(1, silhouette);
-			// マルチテクスチャによるマスクのシェーダを開始
-			const ScopedCustomShader2D shader{ maskShader };
-			crack[1].drawAt(pos);
-		}
-		else if (damage_proportion < 0.6)
-		{
-			Graphics2D::SetPSTexture(1, silhouette);
-			// マルチテクスチャによるマスクのシェーダを開始
-			const ScopedCustomShader2D shader{ maskShader };
-			crack[0].drawAt(pos);
+			crack[crackIndex].rotated(slopeDegree).drawAt(pos);
 		}
 	}
 	
@@ -239,14 +255,6 @@ void Game::draw() const
 		Line{10, Scene::Center().y - 100, 10 + 100 * friendCastleDamage, Scene::Center().y - 100}.draw(10, friend_castle_bar_color);
 		Line{Scene::Width() - 110, Scene::Center().y - 100, Scene::Width() - 10, Scene::Center().y - 100}.draw(10, Palette::Darkgray);
 		Line{Scene::Width() - 10 - 100 * enemyCastleDamage, Scene::Center().y - 100, Scene::Width() - 10, Scene::Center().y - 100}.draw(10, enemy_castle_bar_color);
-	}
-	//背景の描画
-	{
-		const uint16 line = Scene::Center().y + texture_size / 2;
-		//土！！！！
-		Rect{ 0, line, Scene::Width(), Scene::Height() - line }.draw(Color{ 175, 108, 53 });
-		//草！！！！
-		Rect{ 0, line, Scene::Width(), 25 }.draw(Palette::Forestgreen);
 	}
 	
 	// 資金残高表記
