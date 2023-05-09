@@ -19,6 +19,13 @@ class Title : public App::Scene
 	Rect playButton{ Arg::center(playButtonVec), 320, 60 };
 	Point ruleButtonVec{ Scene::Center().x, Scene::Center().y + 90 };
 	Rect ruleButton{ Arg::center(ruleButtonVec), 320, 60 };
+	// ミュート関連
+	const uint8 iconSize = 40;
+	const uint8 iconMargin = iconSize / 2 + 10;
+	const Texture musicIcon{ 0xf075a_icon, iconSize };
+	const Circle musicBack{ Arg::center(Scene::Width() - iconMargin * 2 - iconSize, Scene::Height() - iconMargin), iconSize * 0.625 };
+	const Circle musicMuteBack{ Arg::center(Scene::Width() - iconMargin, Scene::Height() - iconMargin), iconSize * 0.625 };
+	const Texture musicMuteIcon{ 0xf075b_icon, iconSize };
 public:
 	Title(const InitData& init);
 	// 更新関数

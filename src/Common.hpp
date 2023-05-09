@@ -22,6 +22,8 @@ inline JSON ConfigJson;
 
 struct GameData
 {
+	// 音楽がミュートされているか
+	bool IsMusicMuted = false;
 	// 難易度
 	int DifficultyLevel = 2;
 };

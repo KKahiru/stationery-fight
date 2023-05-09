@@ -1051,14 +1051,14 @@
 		6F613B772A0726F200B59858 /* ZeroMQ.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ZeroMQ.xcodeproj; path = lib/libzmq/build/ZeroMQ.xcodeproj; sourceTree = "<group>"; };
 		6FB7B3E02A07965D00CE18C1 /* Game.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Game.cpp; path = Scenes/Game.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		6FB7B3E22A07965D00CE18C1 /* DifficultySetting.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = DifficultySetting.hpp; path = Scenes/DifficultySetting.hpp; sourceTree = "<group>"; usesTabs = 1; };
-		6FB7B3E32A07965D00CE18C1 /* Title.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Title.cpp; path = Scenes/Title.cpp; sourceTree = "<group>"; };
-		6FB7B3E42A07965E00CE18C1 /* Title.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = Title.hpp; path = Scenes/Title.hpp; sourceTree = "<group>"; };
+		6FB7B3E32A07965D00CE18C1 /* Title.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Title.cpp; path = Scenes/Title.cpp; sourceTree = "<group>"; usesTabs = 1; };
+		6FB7B3E42A07965E00CE18C1 /* Title.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = Title.hpp; path = Scenes/Title.hpp; sourceTree = "<group>"; usesTabs = 1; };
 		6FB7B3E52A07965E00CE18C1 /* Game.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = Game.hpp; path = Scenes/Game.hpp; sourceTree = "<group>"; usesTabs = 1; };
 		6FB7B3E72A07965E00CE18C1 /* DifficultySetting.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = DifficultySetting.cpp; path = Scenes/DifficultySetting.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		6FB7B3E82A07965E00CE18C1 /* RuleException.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = RuleException.cpp; path = Scenes/RuleException.cpp; sourceTree = "<group>"; };
 		6FB7B3E92A07965E00CE18C1 /* RuleException.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = RuleException.hpp; path = Scenes/RuleException.hpp; sourceTree = "<group>"; };
-		6FB7B3EF2A079B6300CE18C1 /* Common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Common.cpp; sourceTree = "<group>"; };
-		6FB7B3F02A079B6300CE18C1 /* Common.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Common.hpp; sourceTree = "<group>"; };
+		6FB7B3EF2A079B6300CE18C1 /* Common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Common.cpp; sourceTree = "<group>"; usesTabs = 1; };
+		6FB7B3F02A079B6300CE18C1 /* Common.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Common.hpp; sourceTree = "<group>"; usesTabs = 1; };
 		A57A427A280BB50A004B0397 /* resource */ = {isa = PBXFileReference; lastKnownFileType = folder; name = resource; path = App/resource; sourceTree = "<group>"; };
 		A5FE32A827FC7EC400DAA541 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */

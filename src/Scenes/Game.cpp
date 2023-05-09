@@ -53,7 +53,10 @@ Game::Game(const InitData& init)
 	{
 		summonButtonList.push_back(summon_button(ConfigJson[U"available_types"][i].getString(), i));
 	};
-	BGM.play();
+	if (not getData().IsMusicMuted)
+	{
+		BGM.play();
+	}
 }
 
 // 更新処理
