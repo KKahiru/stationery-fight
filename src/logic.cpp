@@ -266,7 +266,7 @@ void GameState::actionProcess(const Audio& HitPop, Effect& effect)
 					{
 						GameUnitList[i].durability = 0;
 						//ノックバック
-						target->knockBack = 10;
+						target->knockBack = 5;
 					} else {
 						//ノックバック
 						target->knockBack = 1;
@@ -320,11 +320,11 @@ void GameState::actionProcess(const Audio& HitPop, Effect& effect)
 				{
 					if (GameUnitList[i].isFriend)
 					{
-						GameUnitList[i].pos -= knockbackAmount;
+						GameUnitList[i].pos -= getGameUnitType(GameUnitList[i]).speed / 2;
 					}
 					else
 					{
-						GameUnitList[i].pos += knockbackAmount;
+						GameUnitList[i].pos += getGameUnitType(GameUnitList[i]).speed / 2;
 					}
 				}
 			}
@@ -350,18 +350,34 @@ void GameState::actionProcess(const Audio& HitPop, Effect& effect)
 				// 範囲内なら
 				if (target.pos >= influenceRangeBegin
 					and target.pos <= influenceRangeEnd
-					and target.type != U"castle")
+					and target.type != U"castle"
+					and &target != &GameUnitList[i])
 				{
 					filledYList.push_back(target.y);
 				}
 			}
-			// 一つずつ空いているか確認する
-			for (size_t j = 0; j < filledYList.size(); j++)
+			if (filledYList.size() == 0)
 			{
-				// 空いているなら
-				if (*std::find(filledYList.begin(), filledYList.end(), j) != j) {
-					GameUnitList[i].y = j;
-					GameUnitList[i].maxY = *max_element(filledYList.begin(), filledYList.end());
+				GameUnitList[i].previousY = GameUnitList[i].y;
+				GameUnitList[i].maxY = 0;
+				GameUnitList[i].y = 0;
+			}
+			else
+			{
+				// Y座標関連の情報を設定
+				GameUnitList[i].previousY = GameUnitList[i].y;
+				GameUnitList[i].maxY = *max_element(filledYList.begin(), filledYList.end());
+				// 空いてなかったら一番上へ行く
+				GameUnitList[i].y = filledYList.size();
+				// 一つずつ空いているか確認する
+				for (size_t j = 0; j < filledYList.size(); j++)
+				{
+					// 空いているなら
+					if (*std::find(filledYList.begin(), filledYList.end(), j) != j)
+					{
+						GameUnitList[i].y = j;
+						break;
+					}
 				}
 			}
 		}

@@ -18,8 +18,6 @@ namespace stfi {
 constexpr uint8 textureSize = 120;
 #endif
 
-constexpr double knockbackAmount = 0.005;
-
 enum class Features
 {
 	normal,
@@ -111,6 +109,7 @@ public:
 	// Y位置
 	uint8 y = 0;
 	uint8 maxY = 0;
+	uint8 previousY = 0;
 	//耐久値
 	int16 durability;
 	//クールダウン

@@ -19,17 +19,17 @@ String Game::GetStringValue(String type, String key) const
 	return ConfigJson[U"ability_config"][type][key].getString();
 }
 
-uint16 Game::GetXPos(const double& pos) const
+double Game::GetXPos(const double pos) const
 {
 	return pos * Scene::Width();
 }
 
-double Game::GetYPos(const double& pos) const
+double Game::GetYPos(const double pos) const
 {
 	return border / 2 - Math::Tan(-slopeDegree) * GetXPos(pos);
 }
 
-double Game::GetYOffset(const uint16& pos) const
+double Game::GetYOffset(const uint16 pos) const
 {
 	return Math::Tan(-slopeDegree) * pos;
 }
@@ -119,8 +119,8 @@ void Game::update()
 		WasMoneyButtonAvilable = false;
 	}
 	
-	// ユニットの行動処理（0.05秒刻み）
-	while ( 0.05 <= actionAccumulator)
+	// ユニットの行動処理
+	while ( actionTickLong <= actionAccumulator)
 	{
 		// デバック情報の削除
 		ClearPrint();
@@ -142,13 +142,13 @@ void Game::update()
 			}
 		}
 		// 蓄積された秒数を減らす
-		actionAccumulator -= 0.1;
+		actionAccumulator -= actionTickLong;
 	}
 	// 各陣営の収入処理
-	while (0.4 <= incomeAccumulator)
+	while (incomeTickLong <= incomeAccumulator)
 	{
 		state.profitProcess(getData().DifficultyLevel);
-		incomeAccumulator -= 0.4;
+		incomeAccumulator -= incomeTickLong;
 		
 	}
 	waiting_time += state.winner != 0 ? Scene::DeltaTime() : 0;
@@ -166,22 +166,39 @@ void Game::draw() const
 	Quad{ Vec2{ 0, Scene::Height() }, Vec2{ 0, border },  Vec2{ Scene::Width(), border - GetYOffset(Scene::Width()) }, Vec2{ Scene::Width(), Scene::Height() } }.draw(Color{ 175, 108, 53 });
 	//草！！！！
 	Quad{ Vec2{ 0, border }, Vec2{ 0, 0 },  Vec2{ Scene::Width(), 0 - GetYOffset(Scene::Width()) }, Vec2{ Scene::Width(), border - GetYOffset(Scene::Width()) } }.draw(Color{ 68, 187, 68 });
-	
 	// ユニットの描画
 	for (const GameUnit& item : GameUnitList)
 	{
+		GameUnitType info = state.getGameUnitType(item);
 		//座標
 		Vec2 pos;
-		if (item.type == U"pencil_lead")
+		double XOffset;
+		// スムーズに移動する
+		if (item.knockBack != 0)
+		// ノックバック時
 		{
-			pos = { GetXPos(item.pos) , GetYPos(item.pos) };
+			XOffset = (item.isFriend ? -0.5 : 0.5) * info.speed * (actionAccumulator / actionTickLong - 1);
+		}
+		else if (item.cooldown == 0 and not item.isFixed)
+		// 移動時
+		{
+			XOffset = (item.isFriend ? 1 : -1) * info.speed * (actionAccumulator / actionTickLong - 1);
 		}
 		else
 		{
-			pos = { GetXPos(item.pos) , GetYPos(item.pos) - (item.y - item.maxY / 2) * texture_size / 4 };
+			XOffset = 0;
+		}
+		double YOffset = (item.y - item.previousY) * -(actionAccumulator / actionTickLong - 1);
+		if (item.type == U"pencil_lead")
+		{
+			pos = { GetXPos(item.pos + XOffset), GetYPos(item.pos) };
+		}
+		else
+		{
+			pos = { GetXPos(item.pos + XOffset), GetYPos(item.pos) - (item.y - item.maxY / 2 - YOffset) * texture_size / 4 };
 		}
 		//耐久値の割合
-		float damage_proportion = (float)item.durability / state.getGameUnitType(item).durability;
+		float damage_proportion = (float)item.durability / info.durability;
 		//シルエット
 		RenderTexture silhouette;
 		//攻撃しているか

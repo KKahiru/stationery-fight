@@ -22,11 +22,11 @@ class Game : public App::Scene
 	
 	String GetStringValue(String type, String key) const;
 	
-	uint16 GetXPos(const double& pos) const;
+	double GetXPos(const double pos) const;
 	
-	double GetYPos(const double& pos) const;
+	double GetYPos(const double pos) const;
 	
-	double GetYOffset(const uint16& pos) const;
+	double GetYOffset(const uint16 pos) const;
 	
 	//召喚ボタンの情報を格納する構造体
 	struct summon_button
@@ -50,6 +50,9 @@ class Game : public App::Scene
 	// 蓄積された時間（秒）
 	double actionAccumulator = 0.0;
 	double incomeAccumulator = 0.0;
+	// 1ティックの長さ（秒）
+	const float actionTickLong = 0.2;
+	const float incomeTickLong = 0.4;
 	//ひび割れ
 	TextureRegion crack[3] = { Texture{ Resource(U"resource/texture/crack/crack-1.png"), TextureDesc::Mipped }.resized(texture_size),
 		Texture{ Resource(U"resource/texture/crack/crack-2.png"), TextureDesc::Mipped }.resized(texture_size),
