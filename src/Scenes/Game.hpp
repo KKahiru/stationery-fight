@@ -67,6 +67,8 @@ class Game : public App::Scene
 	const Audio BGM{ Audio::Stream, Resource(U"resource/sound/bgm.mp3"), Loop::Yes };
 	// 土と草原のボーダー
 	const uint16 border = Scene::Center().y * 1.25;
+	// 経過時間（秒）
+	double totalTime = 0;
 	//エフェクト
 	Effect effect;
 	//マスク用のシェーダー

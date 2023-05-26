@@ -39,8 +39,6 @@ Game::Game(const InitData& init)
 	: IScene{ init },
 	state(ConfigJson)
 {
-	// 背景の設定
-	Scene::SetBackground(Palette::Lightskyblue);
 	// マスク用のシェーダーの読み込み
 	maskShader = HLSL{ Resource(U"resource/shader/hlsl/multi_texture_mask.hlsl"), U"PS" }
 	| GLSL{ Resource(U"resource/shader/glsl/multi_texture_mask.frag"), {{U"PSConstants2D", 0}} };
@@ -63,6 +61,7 @@ Game::Game(const InitData& init)
 void Game::update()
 {
 	//蓄積された秒数の記録
+	totalTime += Scene::DeltaTime();
 	actionAccumulator += Scene::DeltaTime();
 	incomeAccumulator += Scene::DeltaTime();
 	//ユニットのクリック時の処理
@@ -161,11 +160,42 @@ void Game::update()
 // 描画
 void Game::draw() const
 {
-	//背景の描画
-	//土！！！！
-	Quad{ Vec2{ 0, Scene::Height() }, Vec2{ 0, border },  Vec2{ Scene::Width(), border - GetYOffset(Scene::Width()) }, Vec2{ Scene::Width(), Scene::Height() } }.draw(Color{ 175, 108, 53 });
-	//草！！！！
-	Quad{ Vec2{ 0, border }, Vec2{ 0, 0 },  Vec2{ Scene::Width(), 0 - GetYOffset(Scene::Width()) }, Vec2{ Scene::Width(), border - GetYOffset(Scene::Width()) } }.draw(Color{ 68, 187, 68 });
+	// 時刻
+	const double time = Math::Fmod(totalTime, 45) / 45;
+	// 0~1で表される明るさ
+	double brightness = Periodic::Sine1_1(1, time);
+	if (brightness < 0) {
+		brightness = 0;
+	}
+	// 背景の描画
+	{
+		ColorF skyColor = HSV{196, 1, brightness + 0.1};
+		// 日の出であるか
+		bool isSunrise;
+		if ((isSunrise = time > 0.05 and time < 0.1) or (time > 0.4 and time < 0.45))
+		{
+			double degree;
+			if (isSunrise)
+			{
+				degree = Periodic::Sine1_1(0.1, time - 0.05);
+			}
+			else
+			{
+				degree = Periodic::Sine1_1(0.1, 0.45 - time);
+			}
+			skyColor.r += degree * 0.85;
+			skyColor.g += degree * 0.2;
+			skyColor.b -= degree * 0.4;
+		}
+		Scene::SetBackground(skyColor);
+		//土！！！！
+		Quad{ Vec2{ 0, Scene::Height() }, Vec2{ 0, border },  Vec2{ Scene::Width(), border - GetYOffset(Scene::Width()) }, Vec2{ Scene::Width(), Scene::Height() } }
+		.draw(HSV{ 31, 0.8, 0.25 + brightness * 0.5 });
+		//草！！！！
+		Quad{ Vec2{ 0, border }, Vec2{ 0, 0 },  Vec2{ Scene::Width(), 0 - GetYOffset(Scene::Width()) }, Vec2{ Scene::Width(), border - GetYOffset(Scene::Width()) } }
+		.draw(HSV{ 120, 0.65, 0.35 + brightness * 0.5 });
+	}
+	
 	// ユニットの描画
 	for (const GameUnit& item : GameUnitList)
 	{
@@ -173,6 +203,7 @@ void Game::draw() const
 		//座標
 		Vec2 pos;
 		double XOffset;
+		double margin = Scene::Width() * 0.05;
 		// スムーズに移動する
 		if (item.knockBack != 0)
 		// ノックバック時
@@ -191,11 +222,12 @@ void Game::draw() const
 		double YOffset = (item.y - item.previousY) * -(actionAccumulator / actionTickLong - 1);
 		if (item.type == U"pencil_lead")
 		{
-			pos = { GetXPos(item.pos + XOffset), GetYPos(item.pos) };
+			
+			pos = { margin + GetXPos(item.pos + XOffset) * 0.9, GetYPos(item.pos) };
 		}
 		else
 		{
-			pos = { GetXPos(item.pos + XOffset), GetYPos(item.pos) - (item.y - item.maxY / 2 - YOffset) * texture_size / 4 };
+			pos = { margin + GetXPos(item.pos + XOffset) * 0.9, GetYPos(item.pos) - (item.y - item.maxY / 2 - YOffset) * texture_size / 4 };
 		}
 		//耐久値の割合
 		float damage_proportion = (float)item.durability / info.durability;
