@@ -68,7 +68,7 @@ void Game::update()
 	for (GameUnit& item : GameUnitList)
 	{
 		//クリック時の処理
-		RectF collisionDetection{ Arg::center(GetXPos(item.pos), Scene::Center().y - item.y * texture_size / 8), textureSize };
+		RectF collisionDetection{ Arg::center(GetXPos(item.pos), Scene::Center().y - item.y * TextureSize / 8), textureSize };
 		if (item.isFriend and item.type != U"pencil_lead")
 		{
 			if (collisionDetection.leftClicked() and item.isFriend)
@@ -227,7 +227,7 @@ void Game::draw() const
 		}
 		else
 		{
-			pos = { margin + GetXPos(item.pos + XOffset) * 0.9, GetYPos(item.pos) - (item.y - item.maxY / 2 - YOffset) * texture_size / 4 };
+			pos = { margin + GetXPos(item.pos + XOffset) * 0.9, GetYPos(item.pos) - (item.y - item.maxY / 2 - YOffset) * TextureSize / 4 };
 		}
 		//耐久値の割合
 		float damage_proportion = (float)item.durability / info.durability;
@@ -310,7 +310,7 @@ void Game::draw() const
 	}
 	
 	// 資金残高表記
-	moneyInfoFont(U"手持ちのお金: " + Format(state.FriendCamp.money) + U"円").draw(0, Scene::Height() - texture_size - 40);
+	moneyInfoFont(U"手持ちのお金: " + Format(state.FriendCamp.money) + U"円").draw(0, Scene::Height() - TextureSize - 40);
 	
 	// マウスオーバーされた召喚ボタン
 	String MouseOveredButton = U"";
@@ -320,9 +320,9 @@ void Game::draw() const
 		//背景と枠線の描画
 		item.background.draw(GetConfigValue<int>(item.type, U"cost") > state.FriendCamp.money ? ColorF{ 0.4, 0.4, 0.4 } : item.background.mouseOver() ? ColorF{ 0.5, 0.5, 0.5 } : ColorF{ 0.7, 0.7, 0.7 }).drawFrame(3, 0, ColorF{ 0.3, 0.3, 0.3 });
 		//画像の描画(* 0.4 = * 0.8 / 2)
-		item.texture.resized(texture_size * 0.8).drawAt(item.x,Scene::Size().y - texture_size * 0.4);
+		item.texture.resized(TextureSize * 0.8).drawAt(item.x,Scene::Size().y - TextureSize * 0.4);
 		//ラベルの描画
-		summonButtonFont(Format(GameUnitTypeList[item.type].cost) + U"円").drawAt(item.x,Scene::Size().y - texture_size * 0.875);
+		summonButtonFont(Format(GameUnitTypeList[item.type].cost) + U"円").drawAt(item.x,Scene::Size().y - TextureSize * 0.875);
 		if (item.background.mouseOver())
 		{
 			MouseOveredButton = item.type;
@@ -331,15 +331,15 @@ void Game::draw() const
 	
 	// 資金力強化ボタン
 	moneyButton.draw(120 * Math::Pow(2, state.FriendCamp.profitLevel) > state.FriendCamp.money ? static_cast<HSV>(Palette::Darkgoldenrod) : moneyButton.mouseOver() ? static_cast<HSV>(Palette::Goldenrod) : HSV{ 40, 0.8, 1.0 }).drawFrame(3, 0, Palette::Goldenrod);
-	upgradeButtonFont( U"資金力強化に\n投資する\n" + Format(120 * Math::Pow(2, state.FriendCamp.profitLevel)) + U"円" ).drawAt(Scene::Width() - texture_size / 2, Scene::Height() - texture_size * 0.5);
+	upgradeButtonFont( U"資金力強化に\n投資する\n" + Format(120 * Math::Pow(2, state.FriendCamp.profitLevel)) + U"円" ).drawAt(Scene::Width() - TextureSize / 2, Scene::Height() - TextureSize * 0.5);
 	
 	// 説明欄
 	if (not (MouseOveredButton == U""))
 	{
 		Rect{0, 0, Scene::Width(), 150}.draw(ColorF(Palette::Dimgray, 0.8)).drawFrame(2, 0, Palette::Black);
-		descriptionFont(GetStringValue(MouseOveredButton, U"description")).draw(texture_size + 30, 10);
+		descriptionFont(GetStringValue(MouseOveredButton, U"description")).draw(TextureSize + 30, 10);
 		GameUnitTypeList[MouseOveredButton].getNormalTexture(true).draw(14, 2);
-		nameFont(GetStringValue(MouseOveredButton, U"ja_name")).draw(2, texture_size + 2);
+		nameFont(GetStringValue(MouseOveredButton, U"ja_name")).draw(2, TextureSize + 2);
 	}
 	// エフェクトの更新
 	effect.update();

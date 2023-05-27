@@ -36,10 +36,10 @@ class Game : public App::Scene
 			//種類の登録
 			this->type = type;
 			//ボタンのX座標
-			this->x = texture_size * (count + 0.5) - 3 * count;
+			this->x = TextureSize * (count + 0.5) - 3 * count;
 			this->texture = Texture{ Resource(U"resource/texture/" + type + U"/friend.png"), TextureDesc::Mipped };
 			//ボタンの背景
-			this->background = Rect{texture_size * count - 3 * count,Scene::Size().y - texture_size,texture_size,texture_size};
+			this->background = Rect{TextureSize * count - 3 * count,Scene::Size().y - TextureSize,TextureSize,TextureSize};
 		};
 		String type;
 		Texture texture;
@@ -54,9 +54,9 @@ class Game : public App::Scene
 	const float actionTickLong = 0.2;
 	const float incomeTickLong = 0.4;
 	//ひび割れ
-	TextureRegion crack[3] = { Texture{ Resource(U"resource/texture/crack/crack-1.png"), TextureDesc::Mipped }.resized(texture_size),
-		Texture{ Resource(U"resource/texture/crack/crack-2.png"), TextureDesc::Mipped }.resized(texture_size),
-		Texture{ Resource(U"resource/texture/crack/crack-3.png"), TextureDesc::Mipped }.resized(texture_size) };
+	TextureRegion crack[3] = { Texture{ Resource(U"resource/texture/crack/crack-1.png"), TextureDesc::Mipped }.resized(TextureSize),
+		Texture{ Resource(U"resource/texture/crack/crack-2.png"), TextureDesc::Mipped }.resized(TextureSize),
+		Texture{ Resource(U"resource/texture/crack/crack-3.png"), TextureDesc::Mipped }.resized(TextureSize) };
 	//攻撃音
 	const Audio HitPop{ Resource(U"resource/sound/hit_pop_1.ogg") };
 	//召喚音
@@ -76,11 +76,11 @@ class Game : public App::Scene
 	//召喚ボタンのリスト
 	Array<summon_button> summonButtonList;
 	//召喚ボタンのラベルのフォント
-	Font summonButtonFont{ (int32)(texture_size * 0.15) };
+	Font summonButtonFont{ (int32)(TextureSize * 0.15) };
 	//資金力強化ボタンの背景
-	Rect moneyButton{ Scene::Size().x - texture_size, Scene::Size().y - texture_size, texture_size };
+	Rect moneyButton{ Scene::Size().x - TextureSize, Scene::Size().y - TextureSize, TextureSize };
 	//資金力強化ボタンのラベルのフォント
-	Font upgradeButtonFont{ 18 };
+	Font upgradeButtonFont{ 22 };
 	//資金情報
 	Font moneyInfoFont{ 22 };
 	//解説のフォント

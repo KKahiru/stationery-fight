@@ -21,12 +21,12 @@ Title::Title(const InitData& init)
 // 更新関数
 void Title::update()
 {
-	if (playButton.leftClicked())
+	if (playButton.leftPressed())
 	{
 		AudioAsset(U"choose").playOneShot();
 		changeScene(U"DifficultySetting");
 	}
-	else if (ruleButton.leftClicked())
+	else if (ruleButton.leftPressed())
 	{
 		AudioAsset(U"choose").playOneShot();
 		changeScene(U"RuleExplanation");
@@ -45,14 +45,14 @@ void Title::update()
 void Title::draw() const
 {
 	
-	titleFont(U"Stationery Fight!").drawAt(Scene::Center().x, Scene::Center().y - 190, Palette::Dodgerblue);
-	//プレイボタン
-	playButton.draw(playButton.mouseOver() ? Palette::Cadetblue : Palette::Azure).drawFrame(1, Palette::Black);
-	buttonFont(U"プレイ！").drawAt(playButtonVec,Palette::Black);
-	//ルールボタン
-	ruleButton.draw(ruleButton.mouseOver() ? Palette::Cadetblue : Palette::Azure).drawFrame(1, Palette::Black);
+	titleFont(U"Stationery Fight!").drawAt(Scene::Center().x, Scene::Center().y - 240, Palette::Dodgerblue);
+	// プレイボタン
+	playButton.draw();
+	// ルールボタン
+	ruleButton.draw();
+	// 終了ボタン
+	exitButton.draw();
 	// ミュートボタン
-	buttonFont(U"遊び方・ルール").drawAt(ruleButtonVec,Palette::Black);
 	if (not getData().IsMusicMuted)
 	{
 		musicBack.draw(ColorF{ 0.2, 0.8, 0.2 });

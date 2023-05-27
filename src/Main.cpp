@@ -2,12 +2,12 @@
 # include "Scenes/Title.hpp"
 # include "Scenes/DifficultySetting.hpp"
 # include "Scenes/Game.hpp"
-# include "Scenes/RuleException.hpp"
+# include "Scenes/RuleExplanation.hpp"
 
 void Main()
 {
 	//ウィンドウサイズの設定
-	Window::Resize(960,540);
+	Window::Resize(DisplayResolution::HD_1280x720);
 	//ウィンドウタイトルの設定
 	Window::SetTitle(U"Stationery Fight!");
 	// シーンマネージャーを作成

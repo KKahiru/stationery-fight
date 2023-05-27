@@ -15,7 +15,7 @@
 
 namespace stfi {
 #ifndef HEADLESS
-constexpr uint8 textureSize = 120;
+constexpr uint8 textureSize = 160;
 #endif
 
 enum class Features

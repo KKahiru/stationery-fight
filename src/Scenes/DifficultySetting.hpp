@@ -13,14 +13,14 @@
 // 難易度設定
 class DifficultySetting : public App::Scene
 {
-	Font GuideFont{40};
-	Font ButtonFont{35};
-	Point EasyButtonPos{Scene::Center().x, Scene::Center().y - 30};
-	Rect EasyButton{Arg::center(EasyButtonPos), 500, 60};
-	Point NormalButtonPos{Scene::Center().x, Scene::Center().y + 60};
-	Rect NormalButton{Arg::center(NormalButtonPos), 500, 60};
-	Point HardButtonPos{Scene::Center().x, Scene::Center().y + 150};
-	Rect HardButton{Arg::center(HardButtonPos), 500, 60};
+	Font GuideFont{ 40 };
+	ButtonUI EasyButton{ Vec2{ Scene::Center().x, Scene::Center().y - 100 }, U"イージー", 45, 500, Palette::Lightgreen, Palette::Green };
+	ButtonUI NormalButton{ Vec2{ Scene::Center().x, Scene::Center().y + 40 }, U"やや難", 45, 500, Palette::Azure ,Palette::Cadetblue };
+# ifdef DEBUG
+	ButtonUI HardButton{ Vec2{ Scene::Center().x, Scene::Center().y + 180 }, U"狂気のSATAケーブル", 45, 500, Palette::Orangered, Palette::Darkred };
+# else
+	ButtonUI HardButton{ Vec2{ Scene::Center().x, Scene::Center().y + 320 }, U"不可能", 45, 500, Palette::Orangered, Palette::Darkred };
+#endif
 	
 public:
 	//コンストラクタ

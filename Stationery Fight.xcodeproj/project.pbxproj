@@ -40,11 +40,11 @@
 		6F067DE929E97A9900A77857 /* logic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6F067DE829E97A9900A77857 /* logic.cpp */; };
 		6F6139D02A0722F800B59858 /* player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6F6139CE2A0722F800B59858 /* player.cpp */; };
 		6F613EC32A07293000B59858 /* libzmq.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F613C132A0726F300B59858 /* libzmq.a */; };
-		6FB7B3EA2A07965E00CE18C1 /* RuleException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FB7B3E82A07965E00CE18C1 /* RuleException.cpp */; };
 		6FB7B3EB2A07965E00CE18C1 /* Title.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FB7B3E32A07965D00CE18C1 /* Title.cpp */; };
 		6FB7B3EC2A07965E00CE18C1 /* DifficultySetting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FB7B3E72A07965E00CE18C1 /* DifficultySetting.cpp */; };
 		6FB7B3EE2A07965E00CE18C1 /* Game.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FB7B3E02A07965D00CE18C1 /* Game.cpp */; };
 		6FB7B3F12A079B6300CE18C1 /* Common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FB7B3EF2A079B6300CE18C1 /* Common.cpp */; };
+		6FD692172A22173E00E6B218 /* RuleExplanation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FD692152A22173E00E6B218 /* RuleExplanation.cpp */; };
 		A57A427B280BB50A004B0397 /* resource in Resources */ = {isa = PBXBuildFile; fileRef = A57A427A280BB50A004B0397 /* resource */; };
 		A5FE32A927FC7EC400DAA541 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = A5FE32A827FC7EC400DAA541 /* README.md */; };
 /* End PBXBuildFile section */
@@ -1055,10 +1055,10 @@
 		6FB7B3E42A07965E00CE18C1 /* Title.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = Title.hpp; path = Scenes/Title.hpp; sourceTree = "<group>"; usesTabs = 1; };
 		6FB7B3E52A07965E00CE18C1 /* Game.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = Game.hpp; path = Scenes/Game.hpp; sourceTree = "<group>"; usesTabs = 1; };
 		6FB7B3E72A07965E00CE18C1 /* DifficultySetting.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = DifficultySetting.cpp; path = Scenes/DifficultySetting.cpp; sourceTree = "<group>"; usesTabs = 1; };
-		6FB7B3E82A07965E00CE18C1 /* RuleException.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = RuleException.cpp; path = Scenes/RuleException.cpp; sourceTree = "<group>"; };
-		6FB7B3E92A07965E00CE18C1 /* RuleException.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = RuleException.hpp; path = Scenes/RuleException.hpp; sourceTree = "<group>"; };
 		6FB7B3EF2A079B6300CE18C1 /* Common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Common.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		6FB7B3F02A079B6300CE18C1 /* Common.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Common.hpp; sourceTree = "<group>"; usesTabs = 1; };
+		6FD692152A22173E00E6B218 /* RuleExplanation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RuleExplanation.cpp; path = Scenes/RuleExplanation.cpp; sourceTree = "<group>"; };
+		6FD692162A22173E00E6B218 /* RuleExplanation.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = RuleExplanation.hpp; path = Scenes/RuleExplanation.hpp; sourceTree = "<group>"; };
 		A57A427A280BB50A004B0397 /* resource */ = {isa = PBXFileReference; lastKnownFileType = folder; name = resource; path = App/resource; sourceTree = "<group>"; };
 		A5FE32A827FC7EC400DAA541 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1136,8 +1136,8 @@
 				6FB7B3E22A07965D00CE18C1 /* DifficultySetting.hpp */,
 				6FB7B3E02A07965D00CE18C1 /* Game.cpp */,
 				6FB7B3E52A07965E00CE18C1 /* Game.hpp */,
-				6FB7B3E82A07965E00CE18C1 /* RuleException.cpp */,
-				6FB7B3E92A07965E00CE18C1 /* RuleException.hpp */,
+				6FD692152A22173E00E6B218 /* RuleExplanation.cpp */,
+				6FD692162A22173E00E6B218 /* RuleExplanation.hpp */,
 				6FB7B3E32A07965D00CE18C1 /* Title.cpp */,
 				6FB7B3E42A07965E00CE18C1 /* Title.hpp */,
 				6F6139CE2A0722F800B59858 /* player.cpp */,
@@ -1189,7 +1189,7 @@
 				6F613C0B2A0726F300B59858 /* benchmark_radix_tree */,
 				6F613C0D2A0726F300B59858 /* inproc_lat */,
 				6F613C0F2A0726F300B59858 /* inproc_thr */,
-				6F613C112A0726F300B59858 /* libzmq.dylib */,
+				6F613C112A0726F300B59858 /* libzmq.5.2.5.dylib */,
 				6F613C132A0726F300B59858 /* libzmq.a */,
 				6F613C152A0726F300B59858 /* local_lat */,
 				6F613C172A0726F300B59858 /* local_thr */,
@@ -1406,10 +1406,9 @@
 			remoteRef = 6F613C0E2A0726F300B59858 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		6F613C112A0726F300B59858 /* libzmq.dylib */ = {
+		6F613C112A0726F300B59858 /* libzmq.5.2.5.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			name = libzmq.dylib;
 			path = libzmq.5.2.5.dylib;
 			remoteRef = 6F613C102A0726F300B59858 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -2367,13 +2366,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				6F6139D02A0722F800B59858 /* player.cpp in Sources */,
-				6FB7B3EA2A07965E00CE18C1 /* RuleException.cpp in Sources */,
 				6F067DE929E97A9900A77857 /* logic.cpp in Sources */,
 				6FB7B3EE2A07965E00CE18C1 /* Game.cpp in Sources */,
 				6FB7B3F12A079B6300CE18C1 /* Common.cpp in Sources */,
 				2C17789A1CE0AA7C00BB8AD0 /* Main.cpp in Sources */,
 				6FB7B3EB2A07965E00CE18C1 /* Title.cpp in Sources */,
 				6FB7B3EC2A07965E00CE18C1 /* DifficultySetting.cpp in Sources */,
+				6FD692172A22173E00E6B218 /* RuleExplanation.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
