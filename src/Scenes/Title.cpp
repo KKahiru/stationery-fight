@@ -31,6 +31,11 @@ void Title::update()
 		AudioAsset(U"choose").playOneShot();
 		changeScene(U"RuleExplanation");
 	}
+	else if (exitButton.leftPressed())
+	{
+		AudioAsset(U"choose").playOneShot();
+		System::Exit();
+	}
 	if (musicBack.leftClicked())
 	{
 		getData().IsMusicMuted = false;
