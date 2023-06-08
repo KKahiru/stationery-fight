@@ -10,7 +10,7 @@
 // 型宣言用
 # include <inttypes.h>
 # include <string>
-# include <parallel_hashmap/phmap.h>
+# include <parallel-hashmap/phmap.h>
 # include <vector>
 # include <random>
 # include <nlohmann/json.hpp>

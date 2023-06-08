@@ -8,7 +8,7 @@
 # ifndef DifficultySetting_hpp
 # define DifficultySetting_hpp
 
-# include "Common.hpp"
+# include "../Common.hpp"
 
 // 難易度設定
 class DifficultySetting : public App::Scene

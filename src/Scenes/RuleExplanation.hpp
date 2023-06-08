@@ -8,7 +8,7 @@
 # ifndef RuleExplanation_hpp
 # define RuleExplanation_hpp
 
-# include "Common.hpp"
+# include "../Common.hpp"
 
 class RuleExplanation : public App::Scene
 {

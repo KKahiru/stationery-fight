@@ -1,6 +1,7 @@
-# pragma once
+# ifndef player_hpp
+# define player_hpp
 
-# include <zmq.hpp>
+# include <cppzmq/zmq.hpp>
 
 # include "logic.hpp"
 
@@ -80,3 +81,5 @@ public:
 };
 
 }
+
+# endif /* player_hpp */

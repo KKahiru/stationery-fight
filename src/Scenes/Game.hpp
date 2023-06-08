@@ -8,7 +8,7 @@
 # ifndef Game_hpp
 # define Game_hpp
 
-# include "Common.hpp"
+# include "../Common.hpp"
 
 // ゲームシーン
 class Game : public App::Scene

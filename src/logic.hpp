@@ -5,7 +5,8 @@
 //  Created by KKahiru on 2023/04/14.
 //
 
-# pragma once
+# ifndef logic_hpp
+# define logic_hpp
 
 # ifdef HEADLESS
 # include "define.hpp"
@@ -178,3 +179,5 @@ public:
 	void profitProcess(uint8 difficulty);
 };
 }
+
+# endif /* logic_hpp */

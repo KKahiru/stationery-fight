@@ -5,7 +5,6 @@
 //  Created by KKahiru on 2023/05/07.
 //
 
-# include "Common.hpp"
 # include "Title.hpp"
 
 // タイトルシーン

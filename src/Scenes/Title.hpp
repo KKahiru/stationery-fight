@@ -8,7 +8,7 @@
 # ifndef Title_hpp
 # define Title_hpp
 
-# include "Common.hpp"
+# include "../Common.hpp"
 
 // タイトルシーン
 class Title : public App::Scene

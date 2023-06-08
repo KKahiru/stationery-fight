@@ -5,7 +5,8 @@
 //  Created by KKahiru on 2023/04/16.
 //
 
-# pragma once
+# ifndef Common_hpp
+# define Common_hpp
 
 # include <Siv3D.hpp> // OpenSiv3D v0.6.8
 
@@ -72,3 +73,5 @@ public:
 
 // シーンマネージャーをAppに割り当てる
 using App = SceneManager<String, GameData>;
+
+# endif /* Common_hpp */
