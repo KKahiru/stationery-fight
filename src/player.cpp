@@ -198,6 +198,7 @@ String WeakAI::judge(const GameState& state)
 	return U"";
 }
 
+# ifndef _WIN32
 DeepAI::DeepAI(int port, const Array<String>& optionList, bool isFriend)
 	: optionList(optionList), isFriend(isFriend)
 {
@@ -397,5 +398,6 @@ String DeepAI::judge(const GameState& state)
 
 	return optionList[stoi(reply.to_string())];
 }
+# endif
 
 }

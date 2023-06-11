@@ -1,7 +1,9 @@
 # ifndef player_hpp
 # define player_hpp
 
+# ifndef _WIN32
 # include <cppzmq/zmq.hpp>
+# endif
 
 # include "logic.hpp"
 
@@ -64,6 +66,7 @@ public:
 	String judge(const GameState& state);
 };
 
+# ifndef _WIN32
 class DeepAI : public IPlayer
 {
 	Array<String> optionList;
@@ -79,6 +82,7 @@ public:
 	// 判断する関数
 	String judge(const GameState& state);
 };
+# endif
 
 }
 
