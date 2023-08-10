@@ -1,34 +1,10 @@
 # ifndef player_hpp
 # define player_hpp
 
-# ifndef _WIN32
-# include <cppzmq/zmq.hpp>
-# endif
-
 # include "logic.hpp"
 
 namespace stfi
 {
-// 通信に失敗したときの例外クラス
-class AICommunicationException : public std::runtime_error
-{
-public:
-	AICommunicationException(const char* _Message);
-};
-// AIがリセットを要求した時の例外クラス
-class AIResetException :  public std::runtime_error
-{
-public:
-	AIResetException(const char* _Message);
-};
-
-class AIFinishException : public std::runtime_error
-{
-public:
-	AIFinishException(const char* _Message);
-};
-
-
 // プレイヤーのインターフェース
 class IPlayer
 {
@@ -65,24 +41,6 @@ public:
 	// 判断する関数
 	String judge(const GameState& state);
 };
-
-# ifndef _WIN32
-class DeepAI : public IPlayer
-{
-	Array<String> optionList;
-
-	bool isFriend;
-
-	zmq::context_t ctx{ 1 };
-
-	zmq::socket_t socket{ ctx, zmq::socket_type::pair };
-
-public:
-	DeepAI(int port, const Array<String>& optionList, bool isFriend);
-	// 判断する関数
-	String judge(const GameState& state);
-};
-# endif
 
 }
 

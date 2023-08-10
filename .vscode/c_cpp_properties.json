@@ -4,10 +4,9 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/lib/json/include",
-                "${workspaceFolder}/lib/parallel-hashmap",
-                "${workspaceFolder}/lib/cppzmq",
-                "${workspaceFolder}/lib/libzmq/include"
+                "${workspaceFolder}/lib",
+                "${workspaceFolder}/extern/pybind11/include",
+                "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/Headers"
             ],
             "defines": [
                 "HEADLESS"

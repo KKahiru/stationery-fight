@@ -5,18 +5,6 @@
 
 namespace stfi
 {
-AICommunicationException::AICommunicationException(const char* _Message)
-	: runtime_error(_Message)
-{}
-
-AIResetException::AIResetException(const char* _Message)
-	: runtime_error(_Message)
-{}
-
-AIFinishException::AIFinishException(const char* _Message)
-	: runtime_error(_Message)
-{}
-
 IPlayer::~IPlayer()
 {}
 
@@ -66,7 +54,7 @@ String ConsolePlayer::judge(const GameState& state)
 	{
 		std::cout << "There is not enough money to summon " << Narrow(target) << "." << std::endl;
 	}
-	
+
 	return target;
 }
 # endif
@@ -134,7 +122,7 @@ String WeakAI::judge(const GameState& state)
 					break;
 				case 2:
 				case 3:
-					
+
 					AITarget = U"triangle";
 					break;
 				case 4:
@@ -197,207 +185,5 @@ String WeakAI::judge(const GameState& state)
 	}
 	return U"";
 }
-
-# ifndef _WIN32
-DeepAI::DeepAI(int port, const Array<String>& optionList, bool isFriend)
-	: optionList(optionList), isFriend(isFriend)
-{
-	socket.connect("ipc:///tmp/feeds/" + std::to_string(port));
-# ifdef HEADLESS
-	json paramJSON;
-	
-	paramJSON["winner"] = 0;
-	paramJSON["money"] = 0;
-	paramJSON["profit_level"] = 0;
-	paramJSON["power_ratio"] = 1;
-	for (size_t i = 0; i < FeaturesTable.size(); i++)
-	{
-		paramJSON["friend_power"].push_back(0);
-		paramJSON["enemy_power"].push_back(0);
-	}
-	paramJSON["stage"] = json::array();
-	
-	// 初期状態を送信
-	socket.send(zmq::buffer(paramJSON.dump()), zmq::send_flags::none);
-# else
-	JSON paramJSON;
-	
-	paramJSON[U"winner"] = 0;
-	paramJSON[U"money"] = 0;
-	paramJSON[U"profit_level"] = 0;
-	paramJSON[U"power_ratio"] = 1;
-	for (size_t i = 0; i < FeaturesTable.size(); i++)
-	{
-		paramJSON[U"friend_power"].push_back(0);
-		paramJSON[U"enemy_power"].push_back(0);
-	}
-	paramJSON[U"stage"] = {};
-	
-	// 初期状態を送信
-	socket.send(zmq::buffer(paramJSON.formatUTF8Minimum()), zmq::send_flags::none);
-# endif
-	// AIのバージョンを含む返答を受信
-	zmq::message_t reply;
-	if (!socket.recv(reply, zmq::recv_flags::none))
-	{
-		throw AICommunicationException{ "Failed to communicate with AI" };
-	}
-	if (reply.to_string_view() == "finish")
-	{
-		throw AIFinishException{ "AI has finished training" };
-	}
-	else if (reply.to_string_view() != "0")
-	{
-		throw AICommunicationException{ "AI version does not match" };
-	}
-	
-}
-
-String DeepAI::judge(const GameState& state)
-{
-	const CampInfo& camp = isFriend ? state.FriendCamp : state.EnemyCamp;
-	
-	HashTable<Features, uint16> friendPowerTable{ 0 }, enemyPowerTable{ 0 };
-
-	uint16 totalFriendPower = 0, totalEnemyPower = 0;
-
-	for (const auto& i : state.GameUnitList)
-	{
-		GameUnitType unitType = state.getGameUnitType(i);
-		((!isFriend ^ i.isFriend) ? friendPowerTable : enemyPowerTable)
-		[unitType.feature] += unitType.generalPower + unitType.durability;
-		((!isFriend ^ i.isFriend) ? totalFriendPower : totalEnemyPower)
-		+= unitType.generalPower + unitType.durability;
-	}
-
-		# ifdef HEADLESS
-	
-		json paramJSON;
-		if (isFriend)
-		{
-			paramJSON["winner"] = state.winner;
-		}
-		else
-		{
-			// 勝敗情報を反転する
-			paramJSON["winner"] = state.winner == 1 ? 2 : 1;
-		}
-		paramJSON["money"] = camp.money;
-		paramJSON["profit_level"] = camp.profitLevel;
-		for (const GameUnit& i : state.GameUnitList)
-		{
-			paramJSON["stage"].push_back({{"type", Narrow(i.type)}, {"pos", i.pos}, {"y", i.y}});
-		}
-		paramJSON["power_ratio"] = totalFriendPower / totalEnemyPower;
-		# else
-	
-		JSON paramJSON;
-		if (isFriend)
-		{
-			paramJSON[U"winner"] = state.winner;
-		}
-		else
-		{
-			// 勝敗情報を反転する
-			paramJSON[U"winner"] = state.winner == 1 ? 2 : 1;
-		}
-		paramJSON[U"money"] = camp.money;
-		paramJSON[U"profit_level"] = camp.profitLevel;
-		for (const GameUnit& i : state.GameUnitList)
-		{
-			paramJSON[U"stage"].push_back({{U"type", i.type}, {U"pos", i.pos}, {U"y", i.y}});
-		}
-		paramJSON[U"power_ratio"] = totalFriendPower / totalEnemyPower;
-	
-		# endif
-	
-
-	for (const auto& i : FeaturesTable)
-	{
-		Features feature = FeaturesTable[i.first];
-		auto friendItr = friendPowerTable.find(feature);
-		
-		# ifdef HEADLESS
-		
-		if (friendItr != friendPowerTable.end())
-		{
-			paramJSON["friend_power"].push_back(friendItr->second);
-		}
-		else
-		{
-			paramJSON["friend_power"].push_back(0);
-		}
-		
-		# else
-		
-		if (friendItr != friendPowerTable.end())
-		{
-			paramJSON[U"friend_power"].push_back(friendItr->second);
-		}
-		else
-		{
-			paramJSON[U"friend_power"].push_back(0);
-		}
-		
-		# endif
-
-		auto enemyItr = enemyPowerTable.find(feature);
-		
-		# ifdef HEADLESS
-		
-		if (enemyItr != enemyPowerTable.end())
-		{
-			paramJSON["enemy_power"].push_back(enemyItr->second);
-		}
-		else
-		{
-			paramJSON["enemy_power"].push_back(0);
-		}
-		
-		# else
-		
-		if (enemyItr != enemyPowerTable.end())
-		{
-			paramJSON[U"enemy_power"].push_back(enemyItr->second);
-		}
-		else
-		{
-			paramJSON[U"enemy_power"].push_back(0);
-		}
-		
-		# endif
-	}
-	
-	# ifdef HEADLESS
-	
-	socket.send(zmq::buffer(paramJSON.dump()), zmq::send_flags::none);
-	
-	# else
-	
-	socket.send(zmq::buffer(paramJSON.formatUTF8Minimum()), zmq::send_flags::none);
-	
-	# endif
-	// 返答を受信
-	zmq::message_t reply;
-	if (!socket.recv(reply, zmq::recv_flags::none))
-	{
-		throw AICommunicationException{ "Failed to communicate with AI" };
-	}
-	if (reply.to_string_view() == "abort")
-	{
-		throw AICommunicationException{ "AI has aborted" };
-	}
-	else if (reply.to_string_view() == "reset")
-	{
-		throw AIResetException{ "AI needs to reset" };
-	}
-	else if (reply.to_string_view() == "finish")
-	{
-		throw AIFinishException{ "AI has finished training" };
-	}
-
-	return optionList[stoi(reply.to_string())];
-}
-# endif
 
 }
