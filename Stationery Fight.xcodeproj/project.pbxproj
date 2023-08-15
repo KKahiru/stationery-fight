@@ -448,7 +448,6 @@
 					../../lib/macOS/opencv,
 					../../lib/macOS/opus,
 					../../lib/macOS/zlib,
-					lib/libzmq/macOS,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MARKETING_VERSION = 2.0;
@@ -458,7 +457,7 @@
 					"$(OTHER_CFLAGS)",
 					"-fvisibility=hidden",
 				);
-				OTHER_LDFLAGS = "-lzmq";
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "siv3d.stationery-fight";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -528,7 +527,6 @@
 					../../lib/macOS/opencv,
 					../../lib/macOS/opus,
 					../../lib/macOS/zlib,
-					lib/libzmq/macOS,
 				);
 				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
@@ -539,7 +537,7 @@
 					"$(OTHER_CFLAGS)",
 					"-fvisibility=hidden",
 				);
-				OTHER_LDFLAGS = "-lzmq";
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "siv3d.stationery-fight";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
