@@ -151,7 +151,7 @@ void Game::update()
 		
 	}
 	waiting_time += state.winner != 0 ? Scene::DeltaTime() : 0;
-	if (waiting_time >= 4)
+	if (waiting_time >= 5)
 	{
 		changeScene(U"Title");
 	}

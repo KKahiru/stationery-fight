@@ -204,10 +204,19 @@ FinishEffect::FinishEffect(const bool input)
 
 bool FinishEffect::update(double t)
 {
+	ColorF color;
+	if (isFriendWinner)
+	{
+		color = ColorF{ 1, 1, 1 } * (1 - t / 5) + ColorF{ 0.9, 0.9, 0 } * (t / 5);
+	}
+	else
+	{
+		color = ColorF{ 0, 0.1, 0.9 } * (1 - t / 5) + ColorF{ 0, 0.1, 0.6 } * (t / 5);
+	}
 	//描画
-	finishFont(isFriendWinner ? U"You Win!!" : U"You Lose...").drawAt(Scene::Center(),isFriendWinner ? ColorF{0.9, 0.9, 0} :  ColorF{0, 0.1, 0.9});
-	// 3 秒未満なら継続
-	return (t < 3.0);
+	finishFont(isFriendWinner ? U"You Win!!" : U"You Lose...").drawAt(Scene::Center(), color.withAlpha(Periodic::Sine1_1(10, t)));
+	// 5 秒未満なら継続
+	return (t < 5.0);
 }
 # endif
 
