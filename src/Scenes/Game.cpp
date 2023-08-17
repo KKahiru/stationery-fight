@@ -49,11 +49,11 @@ Game::Game(const InitData& init)
 	
 	for( unsigned long int i = 0; i <  ConfigJson[U"available_types"].size(); i++)
 	{
-		summonButtonList.push_back(summon_button(ConfigJson[U"available_types"][i].getString(), i));
+		summonButtonList.push_back(summonButton(ConfigJson[U"available_types"][i].getString(), i));
 	};
 	if (not getData().IsMusicMuted)
 	{
-		BGM.play();
+		AudioAsset(U"BGM").play();
 	}
 }
 
@@ -92,7 +92,7 @@ void Game::update()
 			// 可能ならユニットを召喚する
 			if (state.summonGameUnit(GameUnitTypeList[summonButtonList[i].type], true))
 			{
-				SummonSound.playOneShot();
+				AudioAsset(U"Summon").playOneShot();
 			}
 		}
 	}
@@ -102,14 +102,14 @@ void Game::update()
 	{
 		state.FriendCamp.money -=  120 * Math::Pow(2, state.FriendCamp.profitLevel);
 		state.FriendCamp.profitLevel ++;
-		SummonSound.playOneShot();
+		AudioAsset(U"Summon").playOneShot();
 	}
 	// 強化ボタンが押せるようになったら音を鳴らす
 	if (state.FriendCamp.money >= 120 * Math::Pow(2, state.FriendCamp.profitLevel))
 	{
 		if (not WasMoneyButtonAvilable)
 		{
-			MoneyAvailable.playOneShot();
+			AudioAsset(U"MoneyAvailable").playOneShot();
 			WasMoneyButtonAvilable = true;
 		}
 	}
@@ -119,11 +119,11 @@ void Game::update()
 	}
 	
 	// ユニットの行動処理
-	while ( actionTickLong <= actionAccumulator)
+	while (actionTickLong <= actionAccumulator)
 	{
 		// デバック情報の削除
 		ClearPrint();
-		state.actionProcess(HitPop, effect);
+		state.actionProcess(AudioAsset(U"Hit"), effect);
 		// AI
 		if (state.winner == 0)
 		{
@@ -249,7 +249,8 @@ void Game::draw() const
 			silhouette = (item.isFriend ? state.getGameUnitType(item).friendNormalMaskRenderTexture : state.getGameUnitType(item).enemyNormalMaskRenderTexture);
 		}
 		//割れ目の描画
-		if (damage_proportion < 0.6) {
+		if (damage_proportion < 0.6)
+		{
 			// 何番目の割れ目を使って描画するか
 			size_t crackIndex;
 			if (damage_proportion < 0.15)

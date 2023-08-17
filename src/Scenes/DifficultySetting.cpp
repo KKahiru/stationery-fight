@@ -19,19 +19,19 @@ void DifficultySetting::update()
 	if (EasyButton.leftPressed())
 	{
 		getData().DifficultyLevel = 1;
-		AudioAsset(U"choose").playOneShot();
+		AudioAsset(U"Choose").playOneShot();
 		changeScene(U"Game");
 	}
 	else if (NormalButton.leftPressed())
 	{
 		getData().DifficultyLevel = 2;
-		AudioAsset(U"choose").playOneShot();
+		AudioAsset(U"Choose").playOneShot();
 		changeScene(U"Game");
 	}
 	else if (HardButton.leftPressed())
 	{
 		getData().DifficultyLevel = 3;
-		AudioAsset(U"choose").playOneShot();
+		AudioAsset(U"Choose").playOneShot();
 		changeScene(U"Game");
 	}
 }

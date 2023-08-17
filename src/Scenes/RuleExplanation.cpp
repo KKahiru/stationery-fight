@@ -42,13 +42,13 @@ void RuleExplanation::update()
 	
 	if (playGameButton.leftPressed())
 	{
-		AudioAsset(U"choose").playOneShot();
+		AudioAsset(U"Choose").playOneShot();
 		changeScene(U"DifficultySetting");
 	}
 	
 	if (goBackButton.leftPressed())
 	{
-		AudioAsset(U"choose").playOneShot();
+		AudioAsset(U"Choose").playOneShot();
 		changeScene(U"Title");
 	}
 }

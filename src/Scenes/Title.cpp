@@ -22,17 +22,17 @@ void Title::update()
 {
 	if (playButton.leftPressed())
 	{
-		AudioAsset(U"choose").playOneShot();
+		AudioAsset(U"Choose").playOneShot();
 		changeScene(U"DifficultySetting");
 	}
 	else if (ruleButton.leftPressed())
 	{
-		AudioAsset(U"choose").playOneShot();
+		AudioAsset(U"Choose").playOneShot();
 		changeScene(U"RuleExplanation");
 	}
 	else if (exitButton.leftPressed())
 	{
-		AudioAsset(U"choose").playOneShot();
+		AudioAsset(U"Choose").playOneShot();
 		System::Exit();
 	}
 	if (musicBack.leftClicked())

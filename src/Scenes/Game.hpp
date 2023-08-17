@@ -29,9 +29,9 @@ class Game : public App::Scene
 	double GetYOffset(const uint16 pos) const;
 	
 	//召喚ボタンの情報を格納する構造体
-	struct summon_button
+	struct summonButton
 	{
-		summon_button(String type, uint16 count)
+		summonButton(String type, uint16 count)
 		{
 			//種類の登録
 			this->type = type;
@@ -57,14 +57,6 @@ class Game : public App::Scene
 	TextureRegion crack[3] = { Texture{ Resource(U"resource/texture/crack/crack-1.png"), TextureDesc::Mipped }.resized(TextureSize),
 		Texture{ Resource(U"resource/texture/crack/crack-2.png"), TextureDesc::Mipped }.resized(TextureSize),
 		Texture{ Resource(U"resource/texture/crack/crack-3.png"), TextureDesc::Mipped }.resized(TextureSize) };
-	//攻撃音
-	const Audio HitPop{ Resource(U"resource/sound/hit_pop_1.ogg") };
-	//召喚音
-	const Audio SummonSound{ Resource(U"resource/sound/summon.ogg") };
-	//資金力ボタンが押せるようになった時の音
-	const Audio MoneyAvailable{ Resource(U"resource/sound/money_available.mp3") };
-	//BGM
-	const Audio BGM{ Audio::Stream, Resource(U"resource/sound/bgm.mp3"), Loop::Yes };
 	// 土と草原のボーダー
 	const uint16 border = Scene::Center().y * 1.25;
 	// 経過時間（秒）
@@ -74,7 +66,7 @@ class Game : public App::Scene
 	//マスク用のシェーダー
 	PixelShader maskShader;
 	//召喚ボタンのリスト
-	Array<summon_button> summonButtonList;
+	Array<summonButton> summonButtonList;
 	//召喚ボタンのラベルのフォント
 	Font summonButtonFont{ (int32)(TextureSize * 0.15) };
 	//資金力強化ボタンの背景
