@@ -190,10 +190,12 @@ void Game::draw() const
 		Scene::SetBackground(skyColor);
 		//土！！！！
 		Quad{ Vec2{ 0, Scene::Height() }, Vec2{ 0, border },  Vec2{ Scene::Width(), border - GetYOffset(Scene::Width()) }, Vec2{ Scene::Width(), Scene::Height() } }
-		.draw(HSV{ 31, 0.8, 0.25 + brightness * 0.5 });
+		.draw(HSV{ 31, 0.8, 0.25 + brightness * 0.25 });
 		//草！！！！
+		const HSV frontGlassColor = HSV{ 120, 0.65, 0.35 + brightness * 0.5 };
+		const HSV backGlassColor = HSV{ 120, 0.65, 0.21 + brightness * 0.3 };
 		Quad{ Vec2{ 0, border }, Vec2{ 0, 0 },  Vec2{ Scene::Width(), 0 - GetYOffset(Scene::Width()) }, Vec2{ Scene::Width(), border - GetYOffset(Scene::Width()) } }
-		.draw(HSV{ 120, 0.65, 0.35 + brightness * 0.5 });
+		.draw(frontGlassColor, frontGlassColor, backGlassColor, backGlassColor);
 	}
 	
 	// ユニットの描画
