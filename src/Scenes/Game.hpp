@@ -24,10 +24,6 @@ class Game : public App::Scene
 	
 	double GetXPos(const double pos) const;
 	
-	double GetYPos(const double pos) const;
-	
-	double GetYOffset(const uint16 pos) const;
-	
 	//召喚ボタンの情報を格納する構造体
 	struct summonButton
 	{
@@ -59,6 +55,8 @@ class Game : public App::Scene
 		Texture{ Resource(U"resource/texture/crack/crack-3.png"), TextureDesc::Mipped }.resized(TextureSize) };
 	// 土と草原のボーダー
 	const uint16 border = Scene::Center().y * 1.25;
+	// ユニットの基本のY座標
+	const double baseY = border / 2;
 	// 経過時間（秒）
 	double totalTime = 0;
 	//エフェクト

@@ -24,16 +24,6 @@ double Game::GetXPos(const double pos) const
 	return pos * Scene::Width();
 }
 
-double Game::GetYPos(const double pos) const
-{
-	return border / 2 - Math::Tan(-slopeDegree) * GetXPos(pos);
-}
-
-double Game::GetYOffset(const uint16 pos) const
-{
-	return Math::Tan(-slopeDegree) * pos;
-}
-
 // コンストラクタ
 Game::Game(const InitData& init)
 	: IScene{ init },
@@ -64,25 +54,6 @@ void Game::update()
 	totalTime += Scene::DeltaTime();
 	actionAccumulator += Scene::DeltaTime();
 	incomeAccumulator += Scene::DeltaTime();
-	//ユニットのクリック時の処理
-	for (GameUnit& item : GameUnitList)
-	{
-		//クリック時の処理
-		RectF collisionDetection{ Arg::center(GetXPos(item.pos), Scene::Center().y - item.y * TextureSize / 8), textureSize };
-		if (item.isFriend and item.type != U"pencil_lead")
-		{
-			if (collisionDetection.leftClicked() and item.isFriend)
-			{
-				//左クリック時に（味方なら）固定
-				item.isFixed = true;
-			}
-			else if(collisionDetection.rightClicked() and item.isFriend)
-			{
-				//右クリック時に（味方なら）固定解除
-				item.isFixed = false;
-			}
-		}
-	}
 	// 召喚ボタンのクリック時の処理
 	for (unsigned long int i = 0; i < summonButtonList.size(); i++)
 	{
@@ -169,6 +140,8 @@ void Game::draw() const
 	}
 	// 背景の描画
 	{
+		// 描画にせん断行列を適用し、背景に傾斜を加える
+		Transformer2D shear{ Mat3x2::ShearY(slopeDegree) };
 		ColorF skyColor = HSV{196, 1, brightness + 0.1};
 		// 日の出であるか
 		bool isSunrise;
@@ -188,88 +161,92 @@ void Game::draw() const
 			skyColor.b -= degree * 0.4;
 		}
 		Scene::SetBackground(skyColor);
-		//土！！！！
-		Quad{ Vec2{ 0, Scene::Height() }, Vec2{ 0, border },  Vec2{ Scene::Width(), border - GetYOffset(Scene::Width()) }, Vec2{ Scene::Width(), Scene::Height() } }
-		.draw(HSV{ 31, 0.8, 0.25 + brightness * 0.25 });
 		//草！！！！
 		const HSV frontGlassColor = HSV{ 120, 0.65, 0.35 + brightness * 0.5 };
 		const HSV backGlassColor = HSV{ 120, 0.65, 0.21 + brightness * 0.3 };
-		Quad{ Vec2{ 0, border }, Vec2{ 0, 0 },  Vec2{ Scene::Width(), 0 - GetYOffset(Scene::Width()) }, Vec2{ Scene::Width(), border - GetYOffset(Scene::Width()) } }
-		.draw(frontGlassColor, frontGlassColor, backGlassColor, backGlassColor);
+		Rect{ 0, 0, Scene::Width(), border }
+		.draw(Arg::left = frontGlassColor, Arg::right = backGlassColor);
+		//土！！！！
+		Rect{ 0, border, Scene::Width(), Scene::Height() - border }
+		.draw(HSV{ 31, 0.8, 0.25 + brightness * 0.25 });
 	}
-	
-	// ユニットの描画
-	for (const GameUnit& item : GameUnitList)
 	{
-		GameUnitType info = state.getGameUnitType(item);
-		//座標
-		Vec2 pos;
-		double XOffset;
-		double margin = Scene::Width() * 0.05;
-		// スムーズに移動する
-		if (item.knockBack != 0)
-		// ノックバック時
+		// このブロック内の描画に回転を適用する
+		Transformer2D rotation{ Mat3x2::Rotate(slopeDegree, Vec2{ Scene::Width() / 2, baseY }) };
+		
+		// ユニットの描画
+		for (const GameUnit& item : GameUnitList)
 		{
-			XOffset = (item.isFriend ? -0.5 : 0.5) * info.speed * (actionAccumulator / actionTickLong - 1);
-		}
-		else if (item.cooldown == 0 and not item.isFixed)
-		// 移動時
-		{
-			XOffset = (item.isFriend ? 1 : -1) * info.speed * (actionAccumulator / actionTickLong - 1);
-		}
-		else
-		{
-			XOffset = 0;
-		}
-		double YOffset = (item.y - item.previousY) * -(actionAccumulator / actionTickLong - 1);
-		if (item.type == U"pencil_lead")
-		{
-			
-			pos = { margin + GetXPos(item.pos + XOffset) * 0.9, GetYPos(item.pos) };
-		}
-		else
-		{
-			pos = { margin + GetXPos(item.pos + XOffset) * 0.9, GetYPos(item.pos) - (item.y - item.maxY / 2 - YOffset) * TextureSize / 4 };
-		}
-		//耐久値の割合
-		float damage_proportion = (float)item.durability / info.durability;
-		//シルエット
-		RenderTexture silhouette;
-		//攻撃しているか
-		if (item.cooldown > GameUnitTypeList.at(item.type).cooldown / 5 * 3)
-		{
-			//攻撃テクスチャーで描画
-			state.getGameUnitType(item).getAttackingTexture(item.isFriend).rotated(slopeDegree).drawAt(pos);
-			silhouette = (item.isFriend ? state.getGameUnitType(item).friendAttackingMaskRenderTexture : state.getGameUnitType(item).enemyAttackingMaskRenderTexture);
-		}
-		else
-		{
-			//通常テクスチャーで描画
-			state.getGameUnitType(item).getNormalTexture(item.isFriend).rotated(slopeDegree).drawAt(pos);
-			silhouette = (item.isFriend ? state.getGameUnitType(item).friendNormalMaskRenderTexture : state.getGameUnitType(item).enemyNormalMaskRenderTexture);
-		}
-		//割れ目の描画
-		if (damage_proportion < 0.6)
-		{
-			// 何番目の割れ目を使って描画するか
-			size_t crackIndex;
-			if (damage_proportion < 0.15)
+			const GameUnitType info = state.getGameUnitType(item);
+			//座標
+			Vec2 pos;
+			double XOffset;
+			double margin = Scene::Width() * 0.05;
+			// スムーズに移動する
+			if (item.knockBack != 0)
+			// ノックバック時
 			{
-				crackIndex = 2;
+				XOffset = (item.isFriend ? -0.5 : 0.5) * info.speed * (actionAccumulator / actionTickLong - 1);
 			}
-			else if (damage_proportion < 0.3)
+			else if (item.cooldown == 0 and not item.isFixed)
+			// 移動時
 			{
-				crackIndex = 1;
+				XOffset = (item.isFriend ? 1 : -1) * info.speed * (actionAccumulator / actionTickLong - 1);
 			}
 			else
 			{
-				crackIndex = 0;
+				XOffset = 0;
 			}
-			
-			Graphics2D::SetPSTexture(1, silhouette);
-			// マルチテクスチャによるマスクのシェーダを開始
-			const ScopedCustomShader2D shader{ maskShader };
-			crack[crackIndex].rotated(slopeDegree).drawAt(pos);
+			double YOffset = (item.y - item.previousY) * -(actionAccumulator / actionTickLong - 1);
+			if (item.type == U"pencil_lead")
+			{
+				
+				pos = { margin + GetXPos(item.pos + XOffset) * 0.9, baseY };
+			}
+			else
+			{
+				pos = { margin + GetXPos(item.pos + XOffset) * 0.9, baseY - (item.y - item.maxY / 2 - YOffset) * TextureSize / 4 };
+			}
+			//耐久値の割合
+			float damage_proportion = (float)item.durability / info.durability;
+			//シルエット
+			RenderTexture silhouette;
+			//攻撃しているか
+			if (item.cooldown > GameUnitTypeList.at(item.type).cooldown / 5 * 3)
+			{
+				//攻撃テクスチャーで描画
+				state.getGameUnitType(item).getAttackingTexture(item.isFriend).drawAt(pos);
+				silhouette = (item.isFriend ? state.getGameUnitType(item).friendAttackingMaskRenderTexture : state.getGameUnitType(item).enemyAttackingMaskRenderTexture);
+			}
+			else
+			{
+				//通常テクスチャーで描画
+				state.getGameUnitType(item).getNormalTexture(item.isFriend).drawAt(pos);
+				silhouette = (item.isFriend ? state.getGameUnitType(item).friendNormalMaskRenderTexture : state.getGameUnitType(item).enemyNormalMaskRenderTexture);
+			}
+			//割れ目の描画
+			if (damage_proportion < 0.6)
+			{
+				// 何番目の割れ目を使って描画するか
+				size_t crackIndex;
+				if (damage_proportion < 0.15)
+				{
+					crackIndex = 2;
+				}
+				else if (damage_proportion < 0.3)
+				{
+					crackIndex = 1;
+				}
+				else
+				{
+					crackIndex = 0;
+				}
+				
+				Graphics2D::SetPSTexture(1, silhouette);
+				// マルチテクスチャによるマスクのシェーダを開始
+				const ScopedCustomShader2D shader{ maskShader };
+				crack[crackIndex].drawAt(pos);
+			}
 		}
 	}
 	
