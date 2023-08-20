@@ -93,6 +93,8 @@ public:
 	
 	Game(const InitData& init);
 	
+	~Game();
+	
 	void update() override;
 	
 	void draw() const override;

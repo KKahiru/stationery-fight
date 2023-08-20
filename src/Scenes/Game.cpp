@@ -47,6 +47,11 @@ Game::Game(const InitData& init)
 	}
 }
 
+Game::~Game()
+{
+	AudioAsset(U"BGM").stop();
+}
+
 // 更新処理
 void Game::update()
 {
