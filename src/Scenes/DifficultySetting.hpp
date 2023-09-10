@@ -19,7 +19,7 @@ class DifficultySetting : public App::Scene
 # ifdef DEBUG
 	ButtonUI HardButton{ Vec2{ Scene::Center().x, Scene::Center().y + 180 }, U"狂気のSATAケーブル", 45, 500, Palette::Orangered, Palette::Darkred };
 # else
-	ButtonUI HardButton{ Vec2{ Scene::Center().x, Scene::Center().y + 320 }, U"不可能", 45, 500, Palette::Orangered, Palette::Darkred };
+	ButtonUI HardButton{ Vec2{ Scene::Center().x, Scene::Center().y + 180 }, U"不可能", 45, 500, Palette::Orangered, Palette::Darkred };
 #endif
 	
 public:
