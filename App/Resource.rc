@@ -207,7 +207,7 @@ Resource(resource/texture/crack/crack-3.png)
 //
 
 //A sound when damaged
-Resource(resource/sound/hit_pop_1.ogg)
+Resource(resource/sound/hit.ogg)
 
 //Choose
 Resource(resource/sound/choose.ogg)
