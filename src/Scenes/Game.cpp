@@ -290,8 +290,8 @@ void Game::draw() const
 
 		Line{10, Scene::Center().y - 100, 110, Scene::Center().y - 100}.draw(10, Palette::Darkgray);
 		Line{10, Scene::Center().y - 100, 10 + 100 * friendCastleDamage, Scene::Center().y - 100}.draw(10, friend_castle_bar_color);
-		Line{Scene::Width() - 110, Scene::Center().y - 100, Scene::Width() - 10, Scene::Center().y - 100}.draw(10, Palette::Darkgray);
-		Line{Scene::Width() - 10 - 100 * enemyCastleDamage, Scene::Center().y - 100, Scene::Width() - 10, Scene::Center().y - 100}.draw(10, enemy_castle_bar_color);
+		Line{Scene::Width() - 110, Scene::Center().y + 40, Scene::Width() - 10, Scene::Center().y + 40}.draw(10, Palette::Darkgray);
+		Line{Scene::Width() - 10 - 100 * enemyCastleDamage, Scene::Center().y + 40, Scene::Width() - 10, Scene::Center().y + 40}.draw(10, enemy_castle_bar_color);
 	}
 	
 	// 資金残高表記
