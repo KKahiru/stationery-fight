@@ -12,3 +12,5 @@ App/Stationery-Fight(*).exe
 App/AS_DEBUG
 # Headless build files
 build
+
+CMakeLists.txt
